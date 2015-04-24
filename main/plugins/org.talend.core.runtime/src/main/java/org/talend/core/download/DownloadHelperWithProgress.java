@@ -28,9 +28,9 @@ public class DownloadHelperWithProgress {
      * created by sgandon on 19 sept. 2013 Detailled comment
      * 
      */
-    private final class DownloadListenerImplementation implements DownloadListener {
+    protected final class DownloadListenerImplementation implements DownloadListener {
 
-        private final IProgressMonitor progressMonitor;
+        protected final IProgressMonitor progressMonitor;
 
         /**
          * DOC sgandon DownloadHelperWithProgress.DownloadListenerImplementation constructor comment.
@@ -55,7 +55,7 @@ public class DownloadHelperWithProgress {
          * @see org.talend.core.download.DownloadListener#downloadProgress(org.talend.core.download.DownloadHelper, int)
          */
         @Override
-        public void downloadProgress(DownloadHelper downloader, int bytesDownloaded) {
+        public void downloadProgress(IDownloadHelper downloader, int bytesDownloaded) {
             progressMonitor.worked(bytesDownloaded);
         }
 
@@ -76,21 +76,6 @@ public class DownloadHelperWithProgress {
     }
 
     /**
-     * download the content of the URL and save it into the targetFolder.
-     * 
-     * @param componentUrl, url to be downloaded, the laste segment is used as a filename
-     * @param targetFolder, folder to place the downloaded data
-     * @param progressMonitor, to be notified of progress, must not be null
-     * @throws IOException, if an IO error occurs.
-     */
-    public void download(String componentUrl, String targetFolder, @SuppressWarnings("hiding")
-    IProgressMonitor progressMonitor) throws IOException {
-        DownloadListenerImplementation downloadProgress = new DownloadListenerImplementation(progressMonitor);
-        DownloadHelper downloadHelper = createDownloadHelperDelegate(downloadProgress);
-        downloadHelper.download(componentUrl, targetFolder);
-    }
-
-    /**
      * download the content of the URL and save it into the destination file.
      * 
      * @param componentUrl, url to download the data
@@ -98,10 +83,10 @@ public class DownloadHelperWithProgress {
      * @param progressMonitor, to monitor the progress, must never be null
      * @throws IOException, if an IO error occurs.
      */
-    public void download(URL componentUrl, File destination, @SuppressWarnings("hiding")
-    IProgressMonitor progressMonitor) throws IOException {
+    public void download(URL componentUrl, File destination, @SuppressWarnings("hiding") IProgressMonitor progressMonitor)
+            throws IOException {
         DownloadListenerImplementation downloadProgress = new DownloadListenerImplementation(progressMonitor);
-        DownloadHelper downloadHelper = createDownloadHelperDelegate(downloadProgress);
+        IDownloadHelper downloadHelper = createDownloadHelperDelegate(downloadProgress);
         downloadHelper.download(componentUrl, destination);
     }
 
@@ -111,7 +96,7 @@ public class DownloadHelperWithProgress {
      * @param downloadProgress
      * @return
      */
-    private DownloadHelper createDownloadHelperDelegate(final DownloadListenerImplementation downloadProgress) {
+    protected IDownloadHelper createDownloadHelperDelegate(final DownloadListenerImplementation downloadProgress) {
         DownloadHelper downloadHelper = new DownloadHelper() {
 
             /*

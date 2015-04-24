@@ -52,8 +52,8 @@ public class DownloadModuleRunnableWithLicenseDialog extends DownloadModuleRunna
 
             @Override
             public void run() {
-                String license = RemoteModulesHelper.getInstance().getLicenseUrl(module.getLicenseType());
-                ModuleLicenseDialog licenseDialog = new ModuleLicenseDialog(shell, module.getLicenseType(), license, module
+                String licenseUrl = module.getLicenseUrl();
+                ModuleLicenseDialog licenseDialog = new ModuleLicenseDialog(shell, module.getLicenseType(), licenseUrl, module
                         .getName());
                 if (licenseDialog.open() != Window.OK) {
                     downloadFailed.add(module.getName());

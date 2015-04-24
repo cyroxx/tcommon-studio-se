@@ -54,6 +54,15 @@ public class ModuleNeeded {
 
     private String moduleLocaion;
 
+    /* version defined in mvn: protocol */
+    private String version = "6.0.0";//$NON-NLS-1$
+
+    private String artifactId;
+
+    private String groupId = "org.talend.libraries";//$NON-NLS-1$
+
+    private String packageName = "jar";//$NON-NLS-1$
+
     public static final String SINGLE_QUOTE = "'"; //$NON-NLS-1$
 
     public static final String QUOTATION_MARK = "\""; //$NON-NLS-1$
@@ -192,6 +201,14 @@ public class ModuleNeeded {
         } else {
             this.moduleName = moduleName;
         }
+        if (moduleName != null) {
+            artifactId = moduleName;
+            int lastIndexOf = moduleName.lastIndexOf(".");//$NON-NLS-1$
+            if (lastIndexOf != -1) {
+                artifactId = moduleName.substring(0, lastIndexOf);
+                packageName = moduleName.substring(lastIndexOf + 1, moduleName.length());
+            }
+        }
     }
 
     public boolean isRequired() {
@@ -289,6 +306,24 @@ public class ModuleNeeded {
         this.moduleLocaion = moduleLocaion;
     }
 
+    /**
+     * Getter for version.
+     * 
+     * @return the version
+     */
+    public String getVersion() {
+        return this.version;
+    }
+
+    /**
+     * Sets the version.
+     * 
+     * @param version the version to set
+     */
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -305,6 +340,9 @@ public class ModuleNeeded {
         }
         if (this.getBundleVersion() != null) {
             hashCode *= this.getBundleVersion().hashCode();
+        }
+        if (this.getVersion() != null) {
+            hashCode *= this.getVersion().hashCode();
         }
         hashCode *= new Boolean(this.isRequired()).hashCode();
         return hashCode;
@@ -374,11 +412,77 @@ public class ModuleNeeded {
                 return false;
             }
         }
+        // Module Version
+        if (other.getVersion() == null) {
+            if (this.getVersion() != null) {
+                return false;
+            }
+        } else {
+            if (this.getVersion() == null) {
+                return false;
+            } else if (!other.getVersion().equals(this.getVersion())) {
+                return false;
+            }
+        }
 
         if (other.isRequired() != this.isRequired()) {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Getter for artifactId.
+     * 
+     * @return the artifactId
+     */
+    public String getArtifactId() {
+        return this.artifactId;
+    }
+
+    /**
+     * Sets the artifactId.
+     * 
+     * @param artifactId the artifactId to set
+     */
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
+    }
+
+    /**
+     * Getter for groupId.
+     * 
+     * @return the groupId
+     */
+    public String getGroupId() {
+        return this.groupId;
+    }
+
+    /**
+     * Sets the groupId.
+     * 
+     * @param groupId the groupId to set
+     */
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    /**
+     * Getter for packageName.
+     * 
+     * @return the packageName
+     */
+    public String getPackageName() {
+        return this.packageName;
+    }
+
+    /**
+     * Sets the packageName.
+     * 
+     * @param packageName the packageName to set
+     */
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
     }
 
 }

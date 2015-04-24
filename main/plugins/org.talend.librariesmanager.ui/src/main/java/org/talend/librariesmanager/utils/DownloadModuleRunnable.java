@@ -13,7 +13,6 @@
 package org.talend.librariesmanager.utils;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -27,9 +26,9 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import org.ops4j.pax.url.mvn.Handler;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.io.FilesUtils;
-import org.talend.core.download.DownloadHelperWithProgress;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.model.general.ModuleToInstall;
 import org.talend.librariesmanager.prefs.LibrariesManagerUtils;
@@ -37,6 +36,8 @@ import org.talend.librariesmanager.ui.LibManagerUiPlugin;
 import org.talend.librariesmanager.ui.i18n.Messages;
 import org.talend.librariesmanager.ui.wizards.AcceptModuleLicensesWizard;
 import org.talend.librariesmanager.ui.wizards.AcceptModuleLicensesWizardDialog;
+import org.talend.librariesmanager.utils.nexus.NexusConstants;
+import org.talend.librariesmanager.utils.nexus.NexusDownloadHelperWithProgress;
 
 abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
 
@@ -79,6 +80,7 @@ abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
         for (final ModuleToInstall module : toDownload) {
             if (!monitor.isCanceled()) {
                 monitor.subTask(module.getName());
+                // TODO change the download target path
                 String librariesPath = LibrariesManagerUtils.getLibrariesPath(ECodeLanguage.JAVA);
                 File target = new File(librariesPath);
                 boolean accepted;
@@ -97,8 +99,10 @@ abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
                         }
                         File destination = new File(target.toString() + File.separator + module.getName());
                         File destinationTemp = target.createTempFile(destination.getName(), ".jar");
-                        DownloadHelperWithProgress downloader = new DownloadHelperWithProgress();
-                        downloader.download(new URL(module.getUrl_download()), destinationTemp, subMonitor.newChild(1));
+                        NexusDownloadHelperWithProgress downloader = new NexusDownloadHelperWithProgress();
+                        String mvnProtecal = NexusConstants.MAVEN_PROTECAL + module.getGroupId() + "/" + module.getArtifactId()
+                                + "/" + module.getVersion() + "/" + module.getPackageName();
+                        downloader.download(new URL(null, mvnProtecal, new Handler()), null, subMonitor.newChild(1));
                         // if the jar had download complete , will copy it from system temp path to "lib/java"
                         if (!monitor.isCanceled()) {
                             FilesUtils.copyFile(destinationTemp, destination);
@@ -119,14 +123,14 @@ abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
                 downloadFailed.add(module.getName());
             }
         }
-        if (!downloadOk.isEmpty()) {
-            try {
-                LibManagerUiPlugin.getDefault().getLibrariesService()
-                        .deployLibrarys(downloadOk.toArray(new URL[downloadOk.size()]));
-            } catch (IOException e) {
-                ExceptionHandler.process(e);
-            }
-        }
+        // if (!downloadOk.isEmpty()) {
+        // try {
+        // LibManagerUiPlugin.getDefault().getLibrariesService()
+        // .deployLibrarys(downloadOk.toArray(new URL[downloadOk.size()]));
+        // } catch (IOException e) {
+        // ExceptionHandler.process(e);
+        // }
+        // }
         subMonitor.worked(1);
     }
 

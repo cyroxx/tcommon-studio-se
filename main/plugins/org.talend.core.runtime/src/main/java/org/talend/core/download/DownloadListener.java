@@ -12,7 +12,6 @@
 // ============================================================================
 package org.talend.core.download;
 
-
 /**
  * 
  * DOC hcyi class global comment. Detailled comment
@@ -32,7 +31,7 @@ public interface DownloadListener {
      * @param downloader The source that trigger this event.
      * @param bytesDownloaded The number of bytes that have readed just now.
      */
-    void downloadProgress(DownloadHelper downloader, int bytesDownloaded);
+    void downloadProgress(IDownloadHelper downloader, int bytesDownloaded);
 
     /**
      * Notify after download complete.

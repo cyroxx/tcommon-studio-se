@@ -32,6 +32,17 @@ public class ModuleToInstall {
 
     private String licenseType;
 
+    private String licenseUrl;
+
+    /* version defined in mvn: protocol */
+    private String version = "6.0.0";//$NON-NLS-1$
+
+    private String artifactId;
+
+    private String groupId = "org.talend.libraries";//$NON-NLS-1$
+
+    private String packageName = "jar";//$NON-NLS-1$
+
     public String getName() {
         return this.name;
     }
@@ -86,5 +97,95 @@ public class ModuleToInstall {
 
     public void setLicenseType(String licenseType) {
         this.licenseType = licenseType;
+    }
+
+    /**
+     * Getter for version.
+     * 
+     * @return the version
+     */
+    public String getVersion() {
+        return this.version;
+    }
+
+    /**
+     * Sets the version.
+     * 
+     * @param version the version to set
+     */
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    /**
+     * Getter for artifactId.
+     * 
+     * @return the artifactId
+     */
+    public String getArtifactId() {
+        return this.artifactId;
+    }
+
+    /**
+     * Sets the artifactId.
+     * 
+     * @param artifactId the artifactId to set
+     */
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
+    }
+
+    /**
+     * Getter for licenseUrl.
+     * 
+     * @return the licenseUrl
+     */
+    public String getLicenseUrl() {
+        return this.licenseUrl;
+    }
+
+    /**
+     * Sets the licenseUrl.
+     * 
+     * @param licenseUrl the licenseUrl to set
+     */
+    public void setLicenseUrl(String licenseUrl) {
+        this.licenseUrl = licenseUrl;
+    }
+
+    /**
+     * Getter for packageName.
+     * 
+     * @return the packageName
+     */
+    public String getPackageName() {
+        return this.packageName;
+    }
+
+    /**
+     * Sets the packageName.
+     * 
+     * @param packageName the packageName to set
+     */
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
+    /**
+     * Getter for groupId.
+     * 
+     * @return the groupId
+     */
+    public String getGroupId() {
+        return this.groupId;
+    }
+
+    /**
+     * Sets the groupId.
+     * 
+     * @param groupId the groupId to set
+     */
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 }

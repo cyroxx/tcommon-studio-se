@@ -26,28 +26,13 @@ import java.util.List;
  * 
  * DOC hcyi class global comment. Detailled comment
  */
-public class DownloadHelper {
+public class DownloadHelper implements IDownloadHelper {
 
     private List<DownloadListener> fListeners = new ArrayList<DownloadListener>();
 
     private boolean fCancel = false;
 
     private static final int BUFFER_SIZE = 8192;
-
-    /**
-     * Download file from specific url to local folder.
-     * 
-     * @param componentUrl The file url to download
-     * @param targetFolder Local folder to store downloaded file
-     * @throws Exception
-     */
-    public void download(String componentUrl, String targetFolder) throws IOException {
-        String fileName = componentUrl.substring(componentUrl.lastIndexOf('/'));
-        File destination = new File(targetFolder + fileName);
-        URL url = new URL(componentUrl);
-
-        download(url, destination);
-    }
 
     /**
      * Download file from specific url.
@@ -57,6 +42,7 @@ public class DownloadHelper {
      * @throws IOException
      * @throws Exception
      */
+    @Override
     public void download(URL componentUrl, File destination) throws IOException {
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
@@ -128,6 +114,7 @@ public class DownloadHelper {
      * 
      * @param cancel the cancel to set
      */
+    @Override
     public void setCancel(boolean cancel) {
         fCancel = cancel;
     }
