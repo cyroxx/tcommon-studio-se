@@ -14,6 +14,7 @@ package org.talend.core.model.general;
 
 import java.util.List;
 
+import org.talend.commons.exception.ExceptionHandler;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.runtime.CoreRuntimePlugin;
 
@@ -54,14 +55,7 @@ public class ModuleNeeded {
 
     private String moduleLocaion;
 
-    /* version defined in mvn: protocol */
-    private String version = "6.0.0";//$NON-NLS-1$
-
-    private String artifactId;
-
-    private String groupId = "org.talend.libraries";//$NON-NLS-1$
-
-    private String packageName = "jar";//$NON-NLS-1$
+    private String mavenUrl;
 
     public static final String SINGLE_QUOTE = "'"; //$NON-NLS-1$
 
@@ -98,7 +92,7 @@ public class ModuleNeeded {
     }
 
     public ModuleNeeded(String context, String moduleName, String informationMsg, boolean required, List<String> installURL,
-            String requiredIf) {
+            String requiredIf, String mavenUrl) {
         super();
         this.context = context;
         setModuleName(moduleName);
@@ -106,6 +100,7 @@ public class ModuleNeeded {
         this.required = required;
         this.installURL = installURL;
         this.requiredIf = requiredIf;
+        this.mavenUrl = mavenUrl;
     }
 
     public String getRequiredIf() {
@@ -200,14 +195,6 @@ public class ModuleNeeded {
                     ""); //$NON-NLS-1$
         } else {
             this.moduleName = moduleName;
-        }
-        if (moduleName != null) {
-            artifactId = moduleName;
-            int lastIndexOf = moduleName.lastIndexOf(".");//$NON-NLS-1$
-            if (lastIndexOf != -1) {
-                artifactId = moduleName.substring(0, lastIndexOf);
-                packageName = moduleName.substring(lastIndexOf + 1, moduleName.length());
-            }
         }
     }
 
@@ -306,24 +293,6 @@ public class ModuleNeeded {
         this.moduleLocaion = moduleLocaion;
     }
 
-    /**
-     * Getter for version.
-     * 
-     * @return the version
-     */
-    public String getVersion() {
-        return this.version;
-    }
-
-    /**
-     * Sets the version.
-     * 
-     * @param version the version to set
-     */
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -341,9 +310,7 @@ public class ModuleNeeded {
         if (this.getBundleVersion() != null) {
             hashCode *= this.getBundleVersion().hashCode();
         }
-        if (this.getVersion() != null) {
-            hashCode *= this.getVersion().hashCode();
-        }
+
         hashCode *= new Boolean(this.isRequired()).hashCode();
         return hashCode;
     }
@@ -412,18 +379,6 @@ public class ModuleNeeded {
                 return false;
             }
         }
-        // Module Version
-        if (other.getVersion() == null) {
-            if (this.getVersion() != null) {
-                return false;
-            }
-        } else {
-            if (this.getVersion() == null) {
-                return false;
-            } else if (!other.getVersion().equals(this.getVersion())) {
-                return false;
-            }
-        }
 
         if (other.isRequired() != this.isRequired()) {
             return false;
@@ -432,57 +387,36 @@ public class ModuleNeeded {
     }
 
     /**
-     * Getter for artifactId.
+     * Getter for mavenUrl.
      * 
-     * @return the artifactId
+     * @return the mavenUrl
      */
-    public String getArtifactId() {
-        return this.artifactId;
+    public String getMavenUrl() {
+        if (mavenUrl == null || "".equals(mavenUrl) || !mavenUrl.startsWith(NexusConstants.MAVEN_PROTECAL)) {
+            return getDefaulMavenUrl();
+        }
+        return this.mavenUrl;
+    }
+
+    private String getDefaulMavenUrl() {
+        String artifactId = moduleName;
+        int index = moduleName.lastIndexOf(".");
+        if (index != -1) {
+            artifactId = moduleName.substring(0, index);
+        }
+        ExceptionHandler.log("Warning : the groupid and version in the url may not be correct");
+        return NexusConstants.MAVEN_PROTECAL + NexusConstants.DEFAULT_GROUP_ID + "/" + artifactId + "/"
+                + NexusConstants.DEFAULT_VERSION;
+
     }
 
     /**
-     * Sets the artifactId.
+     * Sets the mavenUrl.
      * 
-     * @param artifactId the artifactId to set
+     * @param mavenUrl the mavenUrl to set
      */
-    public void setArtifactId(String artifactId) {
-        this.artifactId = artifactId;
-    }
-
-    /**
-     * Getter for groupId.
-     * 
-     * @return the groupId
-     */
-    public String getGroupId() {
-        return this.groupId;
-    }
-
-    /**
-     * Sets the groupId.
-     * 
-     * @param groupId the groupId to set
-     */
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
-    }
-
-    /**
-     * Getter for packageName.
-     * 
-     * @return the packageName
-     */
-    public String getPackageName() {
-        return this.packageName;
-    }
-
-    /**
-     * Sets the packageName.
-     * 
-     * @param packageName the packageName to set
-     */
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
+    public void setMavenUrl(String mavenUrl) {
+        this.mavenUrl = mavenUrl;
     }
 
 }

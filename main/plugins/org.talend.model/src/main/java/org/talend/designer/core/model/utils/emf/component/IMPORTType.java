@@ -26,6 +26,7 @@ import org.eclipse.emf.ecore.EObject;
  *   <li>{@link org.talend.designer.core.model.utils.emf.component.IMPORTType#getREQUIREDIF <em>REQUIREDIF</em>}</li>
  *   <li>{@link org.talend.designer.core.model.utils.emf.component.IMPORTType#isSHOW <em>SHOW</em>}</li>
  *   <li>{@link org.talend.designer.core.model.utils.emf.component.IMPORTType#getUrlPath <em>Url Path</em>}</li>
+ *   <li>{@link org.talend.designer.core.model.utils.emf.component.IMPORTType#getMVN_URL <em>MVN URL</em>}</li>
  * </ul>
  * </p>
  *
@@ -311,6 +312,32 @@ public interface IMPORTType extends EObject {
      * @generated
      */
     void setUrlPath(String value);
+
+    /**
+     * Returns the value of the '<em><b>MVN URL</b></em>' attribute.
+     * <!-- begin-user-doc -->
+     * <p>
+     * If the meaning of the '<em>MVN URL</em>' attribute isn't clear,
+     * there really should be more of a description here...
+     * </p>
+     * <!-- end-user-doc -->
+     * @return the value of the '<em>MVN URL</em>' attribute.
+     * @see #setMVN_URL(String)
+     * @see org.talend.designer.core.model.utils.emf.component.ComponentPackage#getIMPORTType_MVN_URL()
+     * @model dataType="org.eclipse.emf.ecore.xml.type.String"
+     * @generated
+     */
+    String getMVN_URL();
+
+    /**
+     * Sets the value of the '{@link org.talend.designer.core.model.utils.emf.component.IMPORTType#getMVN_URL <em>MVN URL</em>}' attribute.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @param value the new value of the '<em>MVN URL</em>' attribute.
+     * @see #getMVN_URL()
+     * @generated
+     */
+    void setMVN_URL(String value);
 
     /**
      * Returns the value of the '<em><b>REQUIREDIF</b></em>' attribute.

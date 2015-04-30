@@ -35,11 +35,11 @@ public class ModuleToInstall {
     private String licenseUrl;
 
     /* version defined in mvn: protocol */
-    private String version = "6.0.0";//$NON-NLS-1$
+    private String version;
 
     private String artifactId;
 
-    private String groupId = "org.talend.libraries";//$NON-NLS-1$
+    private String groupId;
 
     private String packageName = "jar";//$NON-NLS-1$
 
@@ -187,5 +187,9 @@ public class ModuleToInstall {
      */
     public void setGroupId(String groupId) {
         this.groupId = groupId;
+    }
+
+    public String getMavenUrl() {
+        return NexusConstants.MAVEN_PROTECAL + groupId + "/" + artifactId + "/" + version;
     }
 }

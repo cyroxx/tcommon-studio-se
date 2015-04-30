@@ -15,6 +15,7 @@ package org.talend.librariesmanager.utils;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -49,14 +50,16 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.ops4j.pax.url.mvn.MavenResolver;
+import org.osgi.framework.Version;
 import org.talend.commons.exception.ExceptionHandler;
+import org.talend.commons.utils.VersionUtils;
 import org.talend.commons.utils.network.NetworkUtil;
 import org.talend.core.model.general.ModuleNeeded;
 import org.talend.core.model.general.ModuleToInstall;
+import org.talend.core.model.general.NexusConstants;
 import org.talend.librariesmanager.ui.dialogs.IModulesListener;
 import org.talend.librariesmanager.ui.i18n.Messages;
 import org.talend.librariesmanager.utils.nexus.MavenResolverCreator;
-import org.talend.librariesmanager.utils.nexus.NexusConstants;
 import org.talend.utils.io.FilesUtils;
 
 import us.monoid.json.JSONArray;
@@ -118,7 +121,7 @@ public class RemoteModulesHelper {
             String[] jars = jarNames.split(SEPARATOR_SLIP);
             int size = jars.length;
             Set<String> unavailableModules = new HashSet<String>();
-            monitor.beginTask(Messages.getString("RemoteModulesHelper.fetch.module.info"), size * 10);//$NON-NLS-1$
+            monitor.beginTask(Messages.getString("RemoteModulesHelper.fetch.module.info"), size * 10 + 10);//$NON-NLS-1$
             // if the network is not valid, all jars are not available.
             boolean networkValid = false;
             if (cache == null) {
@@ -133,73 +136,94 @@ public class RemoteModulesHelper {
                 }
             }
 
-            if (networkValid && cache == null) {
+            if (networkValid && (cache == null || recheckCache)) {
                 // only check from the index one time after start studio
                 try {
                     // TODO need modify latter , only parse the index of 6.0.0 by default
                     // mvn:org.talend.libraries_index/libraries_index/6.0.0/zip
                     cache = new HashMap<String, ModuleToInstall>();
-                    File resolve = mvnResolver.resolve(NexusConstants.MODULE_INDEX_SPEC + NexusConstants.BASE_VERSION + "/"
+                    File resolve = mvnResolver.resolve(NexusConstants.MODULE_INDEX_SPEC + NexusConstants.DEFAULT_VERSION + "/"
                             + NexusConstants.INDEX_PACKAGE);
                     // .m2/repository/org/talend/libraries_index/libraries_index/6.0.0/unziped
                     String targetFolder = resolve.getParent() + "/unziped/";
                     FilesUtils.unzip(resolve.getAbsolutePath(), targetFolder);
-                    File indexfile = new File(targetFolder + NexusConstants.INDEX_ARTIFACT_ID + "_" + NexusConstants.BASE_VERSION
-                            + ".xml");
-                    FileInputStream openStream = new FileInputStream(indexfile);
-                    Document document = new SAXReader(false).read(openStream);
-                    Element root = document.getRootElement();
-                    List selectNodes = root.selectNodes("Module");
-                    Iterator iter = selectNodes.iterator();
-                    while (iter.hasNext()) {
-                        Element element = (Element) iter.next();
-                        String artifactId = element.attribute("artifact_Id").getStringValue();
-                        String packageName = element.attribute("package").getStringValue();
-                        String version = element.attribute("version").getStringValue();
-                        String description = element.attribute("description").getStringValue();
-                        String url_description = element.attribute("url").getStringValue();
-                        String download_url = element.attribute("download_url").getStringValue();
-                        String license = element.attribute("license").getStringValue();
-                        String license_url = element.attribute("license_url").getStringValue();
-                        ModuleToInstall m = new ModuleToInstall();
-                        //
-                        m.setName(artifactId + "." + packageName);
-                        m.setPackageName(packageName);
-                        m.setArtifactId(artifactId);
-                        m.setVersion(version);
-                        m.setLicenseType(license);
-                        m.setLicenseUrl(license_url);
-                        m.setDescription(description);
-                        m.setUrl_description(url_description);
-                        if (download_url == null || "".equals(download_url) || "null".equals(download_url)) {//$NON-NLS-1$
-                            m.setUrl_download(null);
-                        } else {
-                            m.setUrl_download(download_url);
-                        }
-                        setContext(m, contextMap);
 
-                        cache.put(artifactId + "/" + packageName + "/" + version, m);
+                    final String currentVersion = VersionUtils.getTalendVersion();
+
+                    File unziped = new File(targetFolder);
+                    File[] validIndexFiles = unziped.listFiles(new FileFilter() {
+
+                        @Override
+                        public boolean accept(File pathname) {
+                            String name = pathname.getName();
+                            int startIndex = name.lastIndexOf("_");
+                            int endIndex = name.lastIndexOf(".");
+                            if (startIndex != -1 && endIndex != -1) {
+                                String fileVersion = name.substring(startIndex + 1, endIndex);
+                                Version current = new Version(currentVersion);
+                                Version fVersion = new Version(fileVersion);
+                                if (current.getMajor() >= fVersion.getMajor() && current.getMicro() >= fVersion.getMicro()
+                                        && current.getMinor() >= fVersion.getMinor()) {
+                                    return true;
+                                }
+                            }
+
+                            return false;
+                        }
+                    });
+                    for (File indexFile : validIndexFiles) {
+                        FileInputStream openStream = new FileInputStream(indexFile);
+                        Document document = new SAXReader(false).read(openStream);
+                        Element root = document.getRootElement();
+                        Element group = root.element("Group");
+                        String groupId = group.attributeValue("id");
+                        Iterator iter = group.elementIterator("Module");
+                        while (iter.hasNext()) {
+                            Element element = (Element) iter.next();
+                            String artifactId = element.attributeValue("artifact_Id");
+                            String packageName = element.attributeValue("package");
+                            String version = element.attributeValue("version");
+                            String description = element.attributeValue("description");
+                            String url_description = element.attributeValue("url");
+                            String download_url = element.attributeValue("download_url");
+                            String license = element.attributeValue("license");
+                            String license_url = element.attributeValue("license_url");
+                            ModuleToInstall m = new ModuleToInstall();
+                            //
+                            m.setName(artifactId + "." + packageName);
+                            m.setPackageName(packageName);
+                            m.setGroupId(groupId);
+                            m.setArtifactId(artifactId);
+                            m.setVersion(version);
+                            m.setLicenseType(license);
+                            m.setLicenseUrl(license_url);
+                            m.setDescription(description);
+                            m.setUrl_description(url_description);
+                            if (download_url == null || "".equals(download_url) || "null".equals(download_url)) {//$NON-NLS-1$
+                                m.setUrl_download(null);
+                            } else {
+                                m.setUrl_download(download_url);
+                            }
+                            setContext(m, contextMap);
+
+                            cache.put(m.getMavenUrl(), m);
+                        }
+                        if (monitor.isCanceled()) {
+                            recheckCache = true;
+                            return;
+                        }
+                        monitor.worked(10);
                     }
-                    if (monitor.isCanceled()) {
-                        return;
-                    }
-                    monitor.worked(10);
+
                 } catch (Exception e1) {
                     ExceptionHandler.process(e1);
+                    recheckCache = true;
                 }
             }
 
-            // TODO need to change latter , just use artifactId + default package +default version to do the test
             for (String name : jars) {
                 String artifact2Check = name;
-                String package2Check = "jar";
-                String version2Check = "6.0.0";
-                int lastIndexOf = name.lastIndexOf(".");
-                if (lastIndexOf != -1) {
-                    artifact2Check = name.substring(0, lastIndexOf);
-                    package2Check = name.substring(lastIndexOf + 1, name.length());
-                }
-                String key = artifact2Check + "/" + package2Check + "/" + version2Check;
+                String key = getDefaulMavenUrl(artifact2Check);
                 ModuleToInstall moduleToInstall = cache.get(key);
                 if (moduleToInstall != null) {
                     toInstall.add(moduleToInstall);
@@ -207,6 +231,7 @@ public class RemoteModulesHelper {
                     unavailableModules.add(name);
                     ExceptionHandler.log("The download URL for " + name + " is not available");//$NON-NLS-1$//$NON-NLS-2$
                 }
+                monitor.worked(10);
             }
 
             // try {
@@ -295,6 +320,25 @@ public class RemoteModulesHelper {
 
             addUnavailableModulesToToBeInstalledModules(unavailableModules, toInstall, contextMap);
             monitor.done();
+        }
+    }
+
+    private String getDefaulMavenUrl(String jarOrUrl) {
+        if (jarOrUrl != null) {
+            if (jarOrUrl.startsWith(NexusConstants.MAVEN_PROTECAL)) {
+                return jarOrUrl;
+            } else {
+                String artifactId = jarOrUrl;
+                int index = jarOrUrl.lastIndexOf(".");
+                if (index != -1) {
+                    artifactId = jarOrUrl.substring(0, index);
+                }
+                ExceptionHandler.log("Warning : the groupid and version in the url may not be correct");
+                return NexusConstants.MAVEN_PROTECAL + NexusConstants.DEFAULT_GROUP_ID + "/" + artifactId + "/"
+                        + NexusConstants.DEFAULT_VERSION;
+            }
+        } else {
+            return null;
         }
     }
 
@@ -408,10 +452,17 @@ public class RemoteModulesHelper {
 
     private MavenResolver mvnResolver;
 
+    private boolean recheckCache = false;
+
     private Map<String, ModuleToInstall> cache;
 
     private RemoteModulesHelper() {
-        mvnResolver = MavenResolverCreator.getMavenResolver();
+        MavenResolverCreator creator = new MavenResolverCreator();
+        String server = "http://localhost:8081/nexus/content/repositories/org.talend.libraries/";
+        String user = "admin";
+        String password = "admin123";
+        creator.setupMavenWithNexus(server, user, password);
+        mvnResolver = creator.getMavenResolver();
     }
 
     public synchronized static RemoteModulesHelper getInstance() {

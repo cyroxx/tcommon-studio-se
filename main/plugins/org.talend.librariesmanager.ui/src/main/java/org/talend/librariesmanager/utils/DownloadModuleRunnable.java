@@ -36,7 +36,6 @@ import org.talend.librariesmanager.ui.LibManagerUiPlugin;
 import org.talend.librariesmanager.ui.i18n.Messages;
 import org.talend.librariesmanager.ui.wizards.AcceptModuleLicensesWizard;
 import org.talend.librariesmanager.ui.wizards.AcceptModuleLicensesWizardDialog;
-import org.talend.librariesmanager.utils.nexus.NexusConstants;
 import org.talend.librariesmanager.utils.nexus.NexusDownloadHelperWithProgress;
 
 abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
@@ -100,8 +99,7 @@ abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
                         File destination = new File(target.toString() + File.separator + module.getName());
                         File destinationTemp = target.createTempFile(destination.getName(), ".jar");
                         NexusDownloadHelperWithProgress downloader = new NexusDownloadHelperWithProgress();
-                        String mvnProtecal = NexusConstants.MAVEN_PROTECAL + module.getGroupId() + "/" + module.getArtifactId()
-                                + "/" + module.getVersion() + "/" + module.getPackageName();
+                        String mvnProtecal = module.getMavenUrl() + "/" + module.getPackageName();
                         downloader.download(new URL(null, mvnProtecal, new Handler()), null, subMonitor.newChild(1));
                         // if the jar had download complete , will copy it from system temp path to "lib/java"
                         if (!monitor.isCanceled()) {
@@ -123,6 +121,8 @@ abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
                 downloadFailed.add(module.getName());
             }
         }
+        // reset the module install status
+        LibManagerUiPlugin.getDefault().getLibrariesService().resetModulesNeeded();
         // if (!downloadOk.isEmpty()) {
         // try {
         // LibManagerUiPlugin.getDefault().getLibrariesService()

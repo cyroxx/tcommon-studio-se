@@ -13,22 +13,19 @@
 package org.talend.librariesmanager.utils.nexus;
 
 /**
- * created by wchen on Apr 23, 2015 Detailled comment
+ * created by wchen on Apr 27, 2015 Detailled comment
  *
  */
-public class NexusConstants {
+public class MavenSetupException extends Exception {
 
-    public static final String BASE_VERSION = "6.0.0";
+    private static final long serialVersionUID = 1L;
 
-    public static final String DEFAULT_GROUP_ID = "org.talend.libraries";
+    public MavenSetupException(String message) {
+        super(message);
+    }
 
-    public static final String MAVEN_PROTECAL = "mvn:";
+    public MavenSetupException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    public static final String INDEX_GROUP_ID = "org.talend.libraries_index";
-
-    public static final String INDEX_ARTIFACT_ID = "libraries_index";
-
-    public static final String INDEX_PACKAGE = "zip";
-
-    public static final String MODULE_INDEX_SPEC = MAVEN_PROTECAL + INDEX_GROUP_ID + "/" + INDEX_ARTIFACT_ID + "/";
 }

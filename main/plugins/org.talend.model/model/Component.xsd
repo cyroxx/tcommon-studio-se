@@ -257,6 +257,7 @@
 		<xsd:attribute default="true" ecore:name="sHOW" name="SHOW"
 			type="xsd:boolean" />
 		<xsd:attribute ecore:name="urlPath" name="UrlPath" type="xsd:string" />
+		<xsd:attribute ecore:name="MVN_URL" name="MVN_URL" type="xsd:string" />
 		<xsd:attribute ecore:name="rEQUIREDIF" name="REQUIRED_IF"
 			type="ecore:EString" />
 		<xsd:attribute default="false" ecore:name="mRREQUIRED"

@@ -1413,13 +1413,22 @@ public interface ComponentPackage extends EPackage {
     int IMPORT_TYPE__URL_PATH = 11;
 
     /**
+     * The feature id for the '<em><b>MVN URL</b></em>' attribute.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     * @ordered
+     */
+    int IMPORT_TYPE__MVN_URL = 12;
+
+    /**
      * The number of structural features of the '<em>IMPORT Type</em>' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
      * @generated
      * @ordered
      */
-    int IMPORT_TYPE_FEATURE_COUNT = 12;
+    int IMPORT_TYPE_FEATURE_COUNT = 13;
 
     /**
      * The meta object id for the '{@link org.talend.designer.core.model.utils.emf.component.impl.INSTALLTypeImpl <em>INSTALL Type</em>}' class.
@@ -3957,6 +3966,17 @@ public interface ComponentPackage extends EPackage {
     EAttribute getIMPORTType_UrlPath();
 
     /**
+     * Returns the meta object for the attribute '{@link org.talend.designer.core.model.utils.emf.component.IMPORTType#getMVN_URL <em>MVN URL</em>}'.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @return the meta object for the attribute '<em>MVN URL</em>'.
+     * @see org.talend.designer.core.model.utils.emf.component.IMPORTType#getMVN_URL()
+     * @see #getIMPORTType()
+     * @generated
+     */
+    EAttribute getIMPORTType_MVN_URL();
+
+    /**
      * Returns the meta object for the attribute '{@link org.talend.designer.core.model.utils.emf.component.IMPORTType#getREQUIREDIF <em>REQUIREDIF</em>}'.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -6212,6 +6232,14 @@ public interface ComponentPackage extends EPackage {
          * @generated
          */
         EAttribute IMPORT_TYPE__URL_PATH = eINSTANCE.getIMPORTType_UrlPath();
+
+        /**
+         * The meta object literal for the '<em><b>MVN URL</b></em>' attribute feature.
+         * <!-- begin-user-doc -->
+         * <!-- end-user-doc -->
+         * @generated
+         */
+        EAttribute IMPORT_TYPE__MVN_URL = eINSTANCE.getIMPORTType_MVN_URL();
 
         /**
          * The meta object literal for the '<em><b>REQUIREDIF</b></em>' attribute feature.

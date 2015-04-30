@@ -1036,6 +1036,7 @@
         <details key="namespace" value="##targetNamespace"/>
       </eAnnotations>
     </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="MVN_URL" eType="ecore:EDataType http://www.eclipse.org/emf/2003/XMLType#//String"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="INSTALLType">
     <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
