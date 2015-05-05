@@ -56,4 +56,9 @@ public class ContextAutoResizeTextPainter extends TextPainter {
     protected boolean performRowResize(int contentHeight, Rectangle rectangle) {
         return (contentHeight != rectangle.height) && (this.calculateByTextHeight);
     }
+    
+	@Override
+	protected void setNewMinLength(ILayerCell cell, int contentWidth) {
+		// for bug TDI-31430. Override to avoid that the column width couldn't set to 0.
+	}
 }
