@@ -15,6 +15,7 @@ package org.talend.metadata.managment.hive;
 import java.io.File;
 import java.util.Set;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.talend.core.GlobalServiceRegister;
@@ -116,7 +117,7 @@ public class HiveClassLoaderFactory {
             return;
         }
 
-        String[] configurationJars;
+        Object[] configurationJars;
         String useKrb = (String) metadataConn.getParameter(ConnParameterKeys.CONN_PARA_KEY_USE_KRB);
         if (Boolean.valueOf(useKrb)) {
             configurationJars = EHadoopConfigurationJars.HIVE.getEnableSecurityJars();
@@ -124,11 +125,21 @@ public class HiveClassLoaderFactory {
             configurationJars = EHadoopConfigurationJars.HIVE.getDisableSecurityJars();
         }
 
+        String executionEngine = (String) metadataConn.getParameter(ConnParameterKeys.HIVE_EXECUTION_ENGINE);
+        EHiveExecutionTypes executionType = EHiveExecutionTypes.getTypeFromValue(executionEngine);
+        if (Boolean.valueOf(EHiveExecutionTypes.TEZ.equals(executionType))) {
+            String hiveVersion = (String) metadataConn.getParameter(ConnParameterKeys.CONN_PARA_KEY_HIVE_VERSION);
+            String[] tezJars = EHiveWithTezJars.getJarsByVersion(hiveVersion);
+            if (tezJars != null) {
+                configurationJars = ArrayUtils.addAll(configurationJars, tezJars);
+            }
+        }
+
         ILibraryManagerService librairesManagerService = (ILibraryManagerService) GlobalServiceRegister.getDefault().getService(
                 ILibraryManagerService.class);
         String libStorePath = loader.getLibStorePath();
-        for (String dependentJar : configurationJars) {
-            librairesManagerService.retrieve(dependentJar, libStorePath, true, new NullProgressMonitor());
+        for (Object dependentJar : configurationJars) {
+            librairesManagerService.retrieve((String) dependentJar, libStorePath, true, new NullProgressMonitor());
             String jarPath = libStorePath + PATH_SEPARATOR + dependentJar;
             File jarFile = new File(jarPath);
             if (jarFile.exists()) {

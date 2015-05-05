@@ -286,6 +286,9 @@ public enum HiveConnVersionInfo {
             HiveConnVersionInfo.HDP_2_1, HiveConnVersionInfo.HDP_2_0, HiveConnVersionInfo.PIVOTAL_HD_2_0,
             HiveConnVersionInfo.APACHE_2_4_0_EMR };
 
+    private static HiveConnVersionInfo[] hiveVersionsSupportingTez = new HiveConnVersionInfo[] { HiveConnVersionInfo.HDP_2_2,
+            HiveConnVersionInfo.HDP_2_1, HiveConnVersionInfo.MAPR4_0_1, HiveConnVersionInfo.DISTRO_VERSION_CUSTOM };
+
     private HiveConnVersionInfo(int level, String key, String displayName, boolean supportSecurity,
             HiveConnVersionInfo... follows) {
         this(level, key, displayName, false, supportSecurity, follows);
@@ -347,6 +350,10 @@ public enum HiveConnVersionInfo {
 
     public static HiveConnVersionInfo[] getHiveVersionsNotSupportOnWindows() {
         return hiveVersions;
+    }
+
+    public static HiveConnVersionInfo[] getHiveVersionsSupportingTez() {
+        return hiveVersionsSupportingTez;
     }
 
     public static HiveConnVersionInfo getVersionByKey(String key) {

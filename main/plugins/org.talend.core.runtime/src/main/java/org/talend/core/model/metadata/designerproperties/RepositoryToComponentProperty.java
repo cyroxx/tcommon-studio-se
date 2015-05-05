@@ -1233,6 +1233,10 @@ public class RepositoryToComponentProperty {
             return connection.getParameters().get(ConnParameterKeys.HIVE_SERVER_VERSION);
         }
 
+        if (value.equals("EXECUTION_ENGINE")) {
+            return connection.getParameters().get(ConnParameterKeys.HIVE_EXECUTION_ENGINE);
+        }
+
         if (value.equals("HBASE_PARAMETERS")) {
             String message = connection.getParameters().get(ConnParameterKeys.CONN_PARA_KEY_HBASE_PROPERTIES);
             return HadoopRepositoryUtil.getHadoopPropertiesFullList(connection, message, true);

@@ -15,6 +15,8 @@ package org.talend.core.model.metadata.connection.hive;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
+
 /**
  * @author Marvin Wang
  * @version 1.0 jdk1.6
@@ -458,6 +460,13 @@ public class HiveConnUtils {
         }
 
         return false;
+    }
+
+    public static boolean isSupportTez(int distributionIndex, int hiveVersionIndex, int hiveModeIndex, int hiveServerIndex) {
+        HiveConnVersionInfo hiveVersionObj = getHiveVersionObj(distributionIndex, hiveVersionIndex);
+        boolean versionSupportTez = ArrayUtils.contains(HiveConnVersionInfo.getHiveVersionsSupportingTez(), hiveVersionObj);
+        boolean isEmbeddedMode = isEmbeddedMode(distributionIndex, hiveVersionIndex, hiveModeIndex, hiveServerIndex);
+        return versionSupportTez && isEmbeddedMode;
     }
 
 }

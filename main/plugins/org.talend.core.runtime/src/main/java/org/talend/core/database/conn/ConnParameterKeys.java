@@ -103,6 +103,8 @@ public class ConnParameterKeys {
 
     public static final String HIVE_AUTHENTICATION_PASSWORD = "HIVE_AUTHENTICATION_PASSWORD";//$NON-NLS-1$
 
+    public static final String HIVE_EXECUTION_ENGINE = "HIVE_EXECUTION_ENGINE";//$NON-NLS-1$
+
     /**
      * The key is for metastore server.
      */
