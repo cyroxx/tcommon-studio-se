@@ -15,6 +15,7 @@ package org.talend.core.model.metadata;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -74,7 +75,6 @@ import org.talend.designer.core.model.utils.emf.talendfile.TalendFileFactory;
 import org.talend.repository.model.IProxyRepositoryFactory;
 import org.talend.repository.model.IRepositoryService;
 import org.talend.repository.model.RepositoryConstants;
-
 import orgomg.cwm.objectmodel.core.TaggedValue;
 
 /**
@@ -639,6 +639,10 @@ public final class MetadataToolHelper {
         targetColumns.addAll(columnsTAdd);
     }
 
+    // public List getBeanListTest() {
+    // org.talend.commons.ui.swt.extended.table.ExtendedTableModel.getBeansList();
+    // }
+
     /**
      * 
      * DOC qli Comment method "copyTable".
@@ -650,16 +654,30 @@ public final class MetadataToolHelper {
         if (sourceColumns == null || target == null) {
             return;
         }
+
+        Map<IMetadataColumn, String> columnsToRemoveMap = new HashMap<IMetadataColumn, String>();
         List<String> readOnlycolumns = new ArrayList<String>();
-        for (IMetadataColumn column : target.getListColumns()) {
-            if (column.isReadOnly()) {
-                readOnlycolumns.add(column.getLabel());
+
+        for (IMetadataColumn inputColumn : sourceColumns) {
+            for (IMetadataColumn outputcolumn : target.getListColumns()) {
+                String outputColumnName = outputcolumn.getLabel();
+                if (inputColumn.getLabel().toLowerCase().equals(("" + outputColumnName).toLowerCase())) {
+                    columnsToRemoveMap.put(inputColumn, outputColumnName);
+                }
+                if (outputcolumn.isReadOnly()) {
+                    readOnlycolumns.add(outputColumnName);
+                }
             }
         }
 
         List<IMetadataColumn> columnsTAdd = new ArrayList<IMetadataColumn>();
         for (IMetadataColumn column : sourceColumns) {
-            IMetadataColumn targetColumn = target.getColumn(column.getLabel());
+            // IMetadataColumn targetColumn = target.getColumn(column.getLabel());
+            IMetadataColumn targetColumn = null;
+            String sameNameIgnoreCaseColumnLabel = columnsToRemoveMap.get(column);
+            if (sameNameIgnoreCaseColumnLabel != null && !sameNameIgnoreCaseColumnLabel.trim().isEmpty()) {
+                targetColumn = target.getColumn(sameNameIgnoreCaseColumnLabel);
+            }
             IMetadataColumn newTargetColumn = column.clone();
             if (targetColumn == null) {
                 columnsTAdd.add(newTargetColumn);
