@@ -51,15 +51,16 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.ops4j.pax.url.mvn.MavenResolver;
 import org.osgi.framework.Version;
+import org.talend.commons.CommonsPlugin;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.VersionUtils;
 import org.talend.commons.utils.network.NetworkUtil;
 import org.talend.core.model.general.ModuleNeeded;
 import org.talend.core.model.general.ModuleToInstall;
 import org.talend.core.model.general.NexusConstants;
+import org.talend.core.nexus.MavenResolverCreator;
 import org.talend.librariesmanager.ui.dialogs.IModulesListener;
 import org.talend.librariesmanager.ui.i18n.Messages;
-import org.talend.librariesmanager.utils.nexus.MavenResolverCreator;
 import org.talend.utils.io.FilesUtils;
 
 import us.monoid.json.JSONArray;
@@ -72,6 +73,9 @@ import us.monoid.json.JSONObject;
  */
 public class RemoteModulesHelper {
 
+    // TODO to be removed after nexus server available
+    public static final boolean nexus_available = false;
+
     // true if user was warned the network connection is not possible
     static private boolean alreadyWarnedAboutConnectionIssue = false;
 
@@ -80,6 +84,9 @@ public class RemoteModulesHelper {
      * 
      */
     private final class RemoteModulesFetchRunnable implements IRunnableWithProgress {
+
+        // TODO to be removed after nexus server available
+        private Set<String> globalUnavailableModulesToBeRemoved = new HashSet<String>();
 
         /**
          * 
@@ -118,208 +125,234 @@ public class RemoteModulesHelper {
 
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            String[] jars = jarNames.split(SEPARATOR_SLIP);
-            int size = jars.length;
-            Set<String> unavailableModules = new HashSet<String>();
-            monitor.beginTask(Messages.getString("RemoteModulesHelper.fetch.module.info"), size * 10 + 10);//$NON-NLS-1$
-            // if the network is not valid, all jars are not available.
-            boolean networkValid = false;
-            if (cache == null) {
-                networkValid = NetworkUtil.isNetworkValid();
+            if (nexus_available) {
+                String[] jars = jarNames.split(SEPARATOR_SLIP);
+                int size = jars.length;
+                Set<String> unavailableModules = new HashSet<String>();
+                monitor.beginTask(Messages.getString("RemoteModulesHelper.fetch.module.info"), size * 10 + 10);//$NON-NLS-1$
+                // if the network is not valid, all jars are not available.
+                boolean networkValid = false;
+                if (cache == null) {
+                    networkValid = NetworkUtil.isNetworkValid();
+                    if (!networkValid) {
+                        unavailableModules.addAll(Arrays.asList(jars));
+                        messages = Messages.getString("RemoteModulesHelper.offlineMessages"); //$NON-NLS-1$
+                        if (!alreadyWarnedAboutConnectionIssue) {
+                            log.warn("failed to connect to internet");
+                            alreadyWarnedAboutConnectionIssue = true;
+                        }// else already warned so do nothing
+                    }
+                }
+                if (networkValid && (cache == null || recheckCache)) {
+                    // only check from the index one time after start studio
+                    try {
+                        // TODO need to remove the index and use pluged lucene search latter
+                        // TODO need modify latter , only parse the index of 6.0.0 by default
+                        // mvn:org.talend.libraries_index/libraries_index/6.0.0/zip
+                        cache = new HashMap<String, ModuleToInstall>();
+                        File resolve = mvnResolver.resolve(NexusConstants.MODULE_INDEX_SPEC + NexusConstants.DEFAULT_VERSION
+                                + "/" + NexusConstants.INDEX_PACKAGE);
+                        // .m2/repository/org/talend/libraries_index/libraries_index/6.0.0/unziped
+                        String targetFolder = resolve.getParent() + "/unziped/";
+                        FilesUtils.unzip(resolve.getAbsolutePath(), targetFolder);
+
+                        final String currentVersion = VersionUtils.getTalendVersion();
+
+                        File unziped = new File(targetFolder);
+                        File[] validIndexFiles = unziped.listFiles(new FileFilter() {
+
+                            @Override
+                            public boolean accept(File pathname) {
+                                String name = pathname.getName();
+                                int startIndex = name.lastIndexOf("_");
+                                int endIndex = name.lastIndexOf(".");
+                                if (startIndex != -1 && endIndex != -1) {
+                                    String fileVersion = name.substring(startIndex + 1, endIndex);
+                                    Version current = new Version(currentVersion);
+                                    Version fVersion = new Version(fileVersion);
+                                    if (current.getMajor() >= fVersion.getMajor() && current.getMicro() >= fVersion.getMicro()
+                                            && current.getMinor() >= fVersion.getMinor()) {
+                                        return true;
+                                    }
+                                }
+
+                                return false;
+                            }
+                        });
+                        for (File indexFile : validIndexFiles) {
+                            FileInputStream openStream = new FileInputStream(indexFile);
+                            Document document = new SAXReader(false).read(openStream);
+                            Element root = document.getRootElement();
+                            Element group = root.element("Group");
+                            String groupId = group.attributeValue("id");
+                            Iterator iter = group.elementIterator("Module");
+                            while (iter.hasNext()) {
+                                Element element = (Element) iter.next();
+                                String artifactId = element.attributeValue("artifact_Id");
+                                String packageName = element.attributeValue("package");
+                                String version = element.attributeValue("version");
+                                String description = element.attributeValue("description");
+                                String url_description = element.attributeValue("url");
+                                String download_url = element.attributeValue("download_url");
+                                String license = element.attributeValue("license");
+                                String license_url = element.attributeValue("license_url");
+                                ModuleToInstall m = new ModuleToInstall();
+                                //
+                                m.setName(artifactId + "." + packageName);
+                                m.setPackageName(packageName);
+                                m.setGroupId(groupId);
+                                m.setArtifactId(artifactId);
+                                m.setVersion(version);
+                                m.setLicenseType(license);
+                                m.setLicenseUrl(license_url);
+                                m.setDescription(description);
+                                m.setUrl_description(url_description);
+                                if (download_url == null || "".equals(download_url) || "null".equals(download_url)) {//$NON-NLS-1$
+                                    m.setUrl_download(null);
+                                } else {
+                                    m.setUrl_download(download_url);
+                                }
+                                setContext(m, contextMap);
+
+                                cache.put(m.getMavenUrl(), m);
+                            }
+                            if (monitor.isCanceled()) {
+                                recheckCache = true;
+                                return;
+                            }
+                            monitor.worked(10);
+                        }
+
+                    } catch (Exception e1) {
+                        ExceptionHandler.process(e1);
+                        recheckCache = true;
+                    }
+                }
+
+                for (String name : jars) {
+                    String artifact2Check = name;
+                    String key = getDefaulMavenUrl(artifact2Check);
+                    ModuleToInstall moduleToInstall = cache.get(key);
+                    if (moduleToInstall != null) {
+                        toInstall.add(moduleToInstall);
+                    } else {
+                        unavailableModules.add(name);
+                        ExceptionHandler.log("The download URL for " + name + " is not available");//$NON-NLS-1$//$NON-NLS-2$
+                    }
+                    monitor.worked(10);
+                }
+
+                addUnavailableModulesToToBeInstalledModules(unavailableModules, toInstall, contextMap);
+                monitor.done();
+            } else {
+                // TODO need to remove after nexus server available
+                if (cache == null) {
+                    cache = new HashMap<String, ModuleToInstall>();
+                }
+                String[] jars = jarNames.split(SEPARATOR_SLIP);
+                int size = jars.length;
+                Set<String> unavailableModules = new HashSet<String>();
+                monitor.beginTask(Messages.getString("RemoteModulesHelper.fetch.module.info"), size * 10);//$NON-NLS-1$
+                // if the network is not valid, all jars are not available.
+                boolean networkValid = NetworkUtil.isNetworkValid();
                 if (!networkValid) {
+                    globalUnavailableModulesToBeRemoved.addAll(Arrays.asList(jars));
                     unavailableModules.addAll(Arrays.asList(jars));
                     messages = Messages.getString("RemoteModulesHelper.offlineMessages"); //$NON-NLS-1$
                     if (!alreadyWarnedAboutConnectionIssue) {
                         log.warn("failed to connect to internet");
                         alreadyWarnedAboutConnectionIssue = true;
                     }// else already warned so do nothing
-                }
-            }
-
-            if (networkValid && (cache == null || recheckCache)) {
-                // only check from the index one time after start studio
-                try {
-                    // TODO need modify latter , only parse the index of 6.0.0 by default
-                    // mvn:org.talend.libraries_index/libraries_index/6.0.0/zip
-                    cache = new HashMap<String, ModuleToInstall>();
-                    File resolve = mvnResolver.resolve(NexusConstants.MODULE_INDEX_SPEC + NexusConstants.DEFAULT_VERSION + "/"
-                            + NexusConstants.INDEX_PACKAGE);
-                    // .m2/repository/org/talend/libraries_index/libraries_index/6.0.0/unziped
-                    String targetFolder = resolve.getParent() + "/unziped/";
-                    FilesUtils.unzip(resolve.getAbsolutePath(), targetFolder);
-
-                    final String currentVersion = VersionUtils.getTalendVersion();
-
-                    File unziped = new File(targetFolder);
-                    File[] validIndexFiles = unziped.listFiles(new FileFilter() {
-
-                        @Override
-                        public boolean accept(File pathname) {
-                            String name = pathname.getName();
-                            int startIndex = name.lastIndexOf("_");
-                            int endIndex = name.lastIndexOf(".");
-                            if (startIndex != -1 && endIndex != -1) {
-                                String fileVersion = name.substring(startIndex + 1, endIndex);
-                                Version current = new Version(currentVersion);
-                                Version fVersion = new Version(fileVersion);
-                                if (current.getMajor() >= fVersion.getMajor() && current.getMicro() >= fVersion.getMicro()
-                                        && current.getMinor() >= fVersion.getMinor()) {
-                                    return true;
+                } else {
+                    try {
+                        int index = 0;
+                        int limit = 100;
+                        while (index < jars.length) {
+                            // get block of 100 jars
+                            String jarsToCheck = "";
+                            while (index < limit && index < jars.length) {
+                                jarsToCheck += jars[index];
+                                index++;
+                                if (index < limit && index < jars.length) {
+                                    jarsToCheck += "|";
                                 }
                             }
-
-                            return false;
-                        }
-                    });
-                    for (File indexFile : validIndexFiles) {
-                        FileInputStream openStream = new FileInputStream(indexFile);
-                        Document document = new SAXReader(false).read(openStream);
-                        Element root = document.getRootElement();
-                        Element group = root.element("Group");
-                        String groupId = group.attributeValue("id");
-                        Iterator iter = group.elementIterator("Module");
-                        while (iter.hasNext()) {
-                            Element element = (Element) iter.next();
-                            String artifactId = element.attributeValue("artifact_Id");
-                            String packageName = element.attributeValue("package");
-                            String version = element.attributeValue("version");
-                            String description = element.attributeValue("description");
-                            String url_description = element.attributeValue("url");
-                            String download_url = element.attributeValue("download_url");
-                            String license = element.attributeValue("license");
-                            String license_url = element.attributeValue("license_url");
-                            ModuleToInstall m = new ModuleToInstall();
-                            //
-                            m.setName(artifactId + "." + packageName);
-                            m.setPackageName(packageName);
-                            m.setGroupId(groupId);
-                            m.setArtifactId(artifactId);
-                            m.setVersion(version);
-                            m.setLicenseType(license);
-                            m.setLicenseUrl(license_url);
-                            m.setDescription(description);
-                            m.setUrl_description(url_description);
-                            if (download_url == null || "".equals(download_url) || "null".equals(download_url)) {//$NON-NLS-1$
-                                m.setUrl_download(null);
-                            } else {
-                                m.setUrl_download(download_url);
+                            limit += 100;
+                            JSONObject message = new JSONObject();
+                            JSONObject child = new JSONObject();
+                            child.put("vaction", "getModules");//$NON-NLS-1$
+                            child.put("name", jarsToCheck);//$NON-NLS-1$
+                            message.put("module", child);//$NON-NLS-1$
+                            String url = serviceUrl + "?data=" + message;
+                            monitor.worked(10);
+                            if (monitor.isCanceled()) {
+                                return;
                             }
-                            setContext(m, contextMap);
+                            JSONObject resultStr = readJsonFromUrl(url);
+                            if (resultStr != null) {
+                                JSONArray jsonArray = resultStr.getJSONArray("result");//$NON-NLS-1$
+                                if (jsonArray != null) {
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        JSONObject obj = jsonArray.getJSONObject(i);
+                                        if (obj != null) {
+                                            String url_description = obj.getString("url_description");//$NON-NLS-1$
+                                            String url_download = obj.getString("url_download");//$NON-NLS-1$
+                                            String name = obj.getString("filename");//$NON-NLS-1$
+                                            if ((url_description == null && url_download == null)
+                                                    || (("".equals(url_description) || "null".equals(url_description)) && (""//$NON-NLS-1$
+                                                    .equals(url_download) || "null".equals(url_download)))) {//$NON-NLS-1$
+                                                ExceptionHandler.log("The download URL for " + name + " is not available");//$NON-NLS-1$
+                                                if (CommonsPlugin.isDebugMode()) {
+                                                    appendToLogFile(name + "\n");
+                                                }
+                                                // keep null in cache no need to check from server again
+                                                cache.put(name, null);
+                                                globalUnavailableModulesToBeRemoved.add(name);
+                                                unavailableModules.add(name);
+                                                continue;
+                                            }
 
-                            cache.put(m.getMavenUrl(), m);
+                                            ModuleToInstall m = new ModuleToInstall();
+
+                                            m.setName(name);
+                                            setContext(m, contextMap);
+                                            String license = obj.getString("licence");//$NON-NLS-1$
+                                            m.setLicenseType(license);
+                                            if ("".equals(license) || "null".equals(license)) {//$NON-NLS-1$
+                                                m.setLicenseType(null);
+                                            }
+                                            String description = obj.getString("description");//$NON-NLS-1$
+                                            if (description == null || "".equals(description) || "null".equals(description)) {//$NON-NLS-1$
+                                                description = m.getName();
+                                            }
+                                            m.setDescription(description);
+                                            m.setUrl_description(url_description);
+                                            if (url_download == null || "".equals(url_download) || "null".equals(url_download)) {//$NON-NLS-1$
+                                                m.setUrl_download(null);
+                                            } else {
+                                                m.setUrl_download(url_download);
+                                            }
+                                            this.toInstall.add(m);
+                                            cache.put(m.getName(), m);
+                                        }
+                                        if (monitor.isCanceled()) {
+                                            return;
+                                        }
+                                        monitor.worked(10);
+                                    }
+                                }
+                            }
                         }
-                        if (monitor.isCanceled()) {
-                            recheckCache = true;
-                            return;
-                        }
-                        monitor.worked(10);
+                    } catch (JSONException e) {
+                        ExceptionHandler.process(e);
+                    } catch (IOException e) {
+                        ExceptionHandler.process(e);
                     }
-
-                } catch (Exception e1) {
-                    ExceptionHandler.process(e1);
-                    recheckCache = true;
                 }
+                addUnavailableModulesToToBeInstalledModules(unavailableModules, toInstall, contextMap);
+                monitor.done();
+
             }
-
-            for (String name : jars) {
-                String artifact2Check = name;
-                String key = getDefaulMavenUrl(artifact2Check);
-                ModuleToInstall moduleToInstall = cache.get(key);
-                if (moduleToInstall != null) {
-                    toInstall.add(moduleToInstall);
-                } else {
-                    unavailableModules.add(name);
-                    ExceptionHandler.log("The download URL for " + name + " is not available");//$NON-NLS-1$//$NON-NLS-2$
-                }
-                monitor.worked(10);
-            }
-
-            // try {
-            // int index = 0;
-            // int limit = 100;
-            // while (index < jars.length) {
-            // // get block of 100 jars
-            // String jarsToCheck = "";
-            // while (index < limit && index < jars.length) {
-            // jarsToCheck += jars[index];
-            // index++;
-            // if (index < limit && index < jars.length) {
-            // jarsToCheck += "|";
-            // }
-            // }
-            // limit += 100;
-            // JSONObject message = new JSONObject();
-            // JSONObject child = new JSONObject();
-            //                        child.put("vaction", "getModules");//$NON-NLS-1$
-            //                        child.put("name", jarsToCheck);//$NON-NLS-1$
-            //                        message.put("module", child);//$NON-NLS-1$
-            // String url = serviceUrl + "?data=" + message;
-            // monitor.worked(10);
-            // if (monitor.isCanceled()) {
-            // return;
-            // }
-            // JSONObject resultStr = readJsonFromUrl(url);
-            // if (resultStr != null) {
-            //                            JSONArray jsonArray = resultStr.getJSONArray("result");//$NON-NLS-1$
-            // if (jsonArray != null) {
-            // for (int i = 0; i < jsonArray.length(); i++) {
-            // JSONObject obj = jsonArray.getJSONObject(i);
-            // if (obj != null) {
-            //                                        String url_description = obj.getString("url_description");//$NON-NLS-1$
-            //                                        String url_download = obj.getString("url_download");//$NON-NLS-1$
-            //                                        String name = obj.getString("filename");//$NON-NLS-1$
-            // if ((url_description == null && url_download == null)
-            //                                                || (("".equals(url_description) || "null".equals(url_description)) && (""//$NON-NLS-1$
-            //                                                .equals(url_download) || "null".equals(url_download)))) {//$NON-NLS-1$
-            //                                            ExceptionHandler.log("The download URL for " + name + " is not available");//$NON-NLS-1$
-            // if (CommonsPlugin.isDebugMode()) {
-            // appendToLogFile(name + "\n");
-            // }
-            // // keep null in cache no need to check from server again
-            // cache.put(name, null);
-            // unavailableModules.add(name);
-            // continue;
-            // }
-            //
-            // ModuleToInstall m = new ModuleToInstall();
-            //
-            // m.setName(name);
-            // setContext(m, contextMap);
-            //                                        String license = obj.getString("licence");//$NON-NLS-1$
-            // m.setLicenseType(license);
-            //                                        if ("".equals(license) || "null".equals(license)) {//$NON-NLS-1$
-            // m.setLicenseType(null);
-            // }
-            //                                        String description = obj.getString("description");//$NON-NLS-1$
-            //                                        if (description == null || "".equals(description) || "null".equals(description)) {//$NON-NLS-1$
-            // description = m.getName();
-            // }
-            // m.setDescription(description);
-            // m.setUrl_description(url_description);
-            //                                        if (url_download == null || "".equals(url_download) || "null".equals(url_download)) {//$NON-NLS-1$
-            // m.setUrl_download(null);
-            // } else {
-            // m.setUrl_download(url_download);
-            // }
-            // this.toInstall.add(m);
-            // cache.put(m.getName(), m);
-            // }
-            // if (monitor.isCanceled()) {
-            // return;
-            // }
-            // monitor.worked(10);
-            // }
-            // }
-            // }
-            // }
-            // } catch (JSONException e) {
-            // ExceptionHandler.process(e);
-            // } catch (IOException e) {
-            // ExceptionHandler.process(e);
-            // }
-
-            addUnavailableModulesToToBeInstalledModules(unavailableModules, toInstall, contextMap);
-            monitor.done();
         }
     }
 
@@ -457,12 +490,7 @@ public class RemoteModulesHelper {
     private Map<String, ModuleToInstall> cache;
 
     private RemoteModulesHelper() {
-        MavenResolverCreator creator = new MavenResolverCreator();
-        String server = "http://localhost:8081/nexus/content/repositories/org.talend.libraries/";
-        String user = "admin";
-        String password = "admin123";
-        creator.setupMavenWithNexus(server, user, password);
-        mvnResolver = creator.getMavenResolver();
+        mvnResolver = MavenResolverCreator.getInstance().getMavenResolver(null);
     }
 
     public synchronized static RemoteModulesHelper getInstance() {
