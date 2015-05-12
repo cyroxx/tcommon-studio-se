@@ -322,7 +322,7 @@ public class ModulesNeededProvider {
         }
         List<String> list = getInstallURL(importType);
         ModuleNeeded moduleNeeded = new ModuleNeeded(context, importType.getMODULE(), msg, importType.isREQUIRED(), list,
-                importType.getREQUIREDIF(), importType.getMVN_URL());
+                importType.getREQUIREDIF(), importType.getMVN());
         initBundleID(importType, moduleNeeded);
         moduleNeeded.setMrRequired(importType.isMRREQUIRED());
         moduleNeeded.setShow(importType.isSHOW());

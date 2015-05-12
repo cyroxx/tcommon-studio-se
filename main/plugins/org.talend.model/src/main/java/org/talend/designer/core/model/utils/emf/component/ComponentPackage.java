@@ -1413,13 +1413,13 @@ public interface ComponentPackage extends EPackage {
     int IMPORT_TYPE__URL_PATH = 11;
 
     /**
-     * The feature id for the '<em><b>MVN URL</b></em>' attribute.
+     * The feature id for the '<em><b>MVN</b></em>' attribute.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
      * @generated
      * @ordered
      */
-    int IMPORT_TYPE__MVN_URL = 12;
+    int IMPORT_TYPE__MVN = 12;
 
     /**
      * The number of structural features of the '<em>IMPORT Type</em>' class.
@@ -3966,15 +3966,15 @@ public interface ComponentPackage extends EPackage {
     EAttribute getIMPORTType_UrlPath();
 
     /**
-     * Returns the meta object for the attribute '{@link org.talend.designer.core.model.utils.emf.component.IMPORTType#getMVN_URL <em>MVN URL</em>}'.
+     * Returns the meta object for the attribute '{@link org.talend.designer.core.model.utils.emf.component.IMPORTType#getMVN <em>MVN</em>}'.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
-     * @return the meta object for the attribute '<em>MVN URL</em>'.
-     * @see org.talend.designer.core.model.utils.emf.component.IMPORTType#getMVN_URL()
+     * @return the meta object for the attribute '<em>MVN</em>'.
+     * @see org.talend.designer.core.model.utils.emf.component.IMPORTType#getMVN()
      * @see #getIMPORTType()
      * @generated
      */
-    EAttribute getIMPORTType_MVN_URL();
+    EAttribute getIMPORTType_MVN();
 
     /**
      * Returns the meta object for the attribute '{@link org.talend.designer.core.model.utils.emf.component.IMPORTType#getREQUIREDIF <em>REQUIREDIF</em>}'.
@@ -6234,12 +6234,12 @@ public interface ComponentPackage extends EPackage {
         EAttribute IMPORT_TYPE__URL_PATH = eINSTANCE.getIMPORTType_UrlPath();
 
         /**
-         * The meta object literal for the '<em><b>MVN URL</b></em>' attribute feature.
+         * The meta object literal for the '<em><b>MVN</b></em>' attribute feature.
          * <!-- begin-user-doc -->
          * <!-- end-user-doc -->
          * @generated
          */
-        EAttribute IMPORT_TYPE__MVN_URL = eINSTANCE.getIMPORTType_MVN_URL();
+        EAttribute IMPORT_TYPE__MVN = eINSTANCE.getIMPORTType_MVN();
 
         /**
          * The meta object literal for the '<em><b>REQUIREDIF</b></em>' attribute feature.
