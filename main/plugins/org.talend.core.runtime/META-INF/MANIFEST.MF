@@ -106,9 +106,5 @@ Bundle-Activator: org.talend.core.runtime.CoreRuntimePlugin
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
  lib/resty-0.2.0.jar,
- lib/avro-1.7.7.jar,
- lib/avro-tools-1.7.7.jar,
- lib/jackson-core-asl-1.9.13.jar,
- lib/jackson-mapper-asl-1.9.13.jar,
  lib/json_simple-1.1.jar
 Eclipse-RegisterBuddy: org.talend.testutils

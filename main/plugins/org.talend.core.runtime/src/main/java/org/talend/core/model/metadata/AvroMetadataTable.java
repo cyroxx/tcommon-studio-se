@@ -12,255 +12,66 @@
 // ============================================================================
 package org.talend.core.model.metadata;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-
-import org.apache.avro.Schema;
-import org.apache.avro.SchemaBuilder;
-import org.apache.avro.SchemaBuilder.BaseFieldTypeBuilder;
-import org.apache.avro.SchemaBuilder.FieldAssembler;
-import org.apache.avro.SchemaBuilder.FieldTypeBuilder;
-import org.apache.avro.compiler.specific.SpecificCompiler;
-import org.apache.avro.compiler.specific.SpecificCompiler.FieldVisibility;
-import org.apache.avro.generic.GenericData.StringType;
-import org.talend.commons.exception.ExceptionHandler;
-import org.talend.core.GlobalServiceRegister;
-import org.talend.core.model.process.IProcess;
-import org.talend.core.model.process.IProcess2;
-import org.talend.core.runtime.process.ITalendProcessJavaProject;
-import org.talend.designer.runprocess.IRunProcessService;
+import java.util.Map;
 
 /**
- * Meta Data Table. Contains all the columns. <br/>
- * $Id: MetadataTable.java 46622 2010-08-11 10:04:57Z wliu $
+ * Exists only as a stub for the many javajet components that still use it. This class will disappear. Javajet
+ * components should use the BigDataCodeGeneratorArgument instead.
  */
+@Deprecated
 public class AvroMetadataTable extends MetadataTable {
 
-    private final static String AVRO_TEMPLATE_DIR = "/org/talend/core/model/metadata/avro/specific/"; //$NON-NLS-1$
+    public static HashMap<IMetadataTable, String> dedup;
 
-    private final static String AVRO_TEMPLATE_BEAN_DIR = "/org/talend/core/model/metadata/avro/bean/"; //$NON-NLS-1$
+    String connectionName;
 
-    private Schema schema = null;
-
-    private String filePath;
-
-    private String technicalProjectName;
-
-    private String jobName;
-
-    private String connectionTypeName;
-
-    /**
-     * This constructor will extract process data to get the filePath, the technicalProjectName and the jobName of the
-     * current metadata
-     *
-     * @param process the current process
-     */
-    public AvroMetadataTable(IProcess2 process) {
-        this((String) process.getElementParameter("COMP_DEFAULT_FILE_DIR").getValue(), (String) process.getElementParameter( //$NON-NLS-1$
-                "PROJECT_TECHNICAL_NAME").getValue(), process.getProperty().getLabel(), process.getProperty().getVersion()); //$NON-NLS-1$
-
-    }
-
-    public AvroMetadataTable(IProcess process) {
-        this((String) process.getElementParameter("COMP_DEFAULT_FILE_DIR").getValue(), (String) process.getElementParameter( //$NON-NLS-1$
-                "PROJECT_TECHNICAL_NAME").getValue(), process.getName(), process.getVersion()); //$NON-NLS-1$
-
-    }
-
-    /**
-     * This constructor will extract project data to get the filePath, the technicalProjectName and the jobName of the
-     * current metadata
-     *
-     * @param projectPath the path to the sources of the project
-     * @param technicalProjectName the name of the project
-     * @param jobName the name of the job without version
-     * @param jobVersion the version of the job
-     */
-    public AvroMetadataTable(String projectPath, String technicalProjectName, String jobName, String jobVersion) {
-        super();
-        // Use projectPath to go to the filePath
-        if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
-            IRunProcessService processService = (IRunProcessService) GlobalServiceRegister.getDefault().getService(
-                    IRunProcessService.class);
-            ITalendProcessJavaProject talendProcessJavaProject = processService.getTalendProcessJavaProject();
-            if (talendProcessJavaProject != null) {
-                this.filePath = talendProcessJavaProject.getSrcFolder().getLocation().toFile().toString();
-            }
-        }
-        if (this.filePath == null) { // if don't set, should set a default one?
-            // this.filePath = projectPath + "/.Java/src/main/java"; //$NON-NLS-1$
-        }
-        this.technicalProjectName = technicalProjectName.toLowerCase();
-
-        this.jobName = jobName + "_" + jobVersion.replace(".", "_"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        this.jobName = this.jobName.toLowerCase();
-    }
-
-    /**
-     * This constructor use already extracted variable of the current metadata. It will be used by the clone() method.
-     *
-     * @param filePath the path to the generated sources of the project
-     * @param technicalProjectName the name of the project
-     * @param jobName the name of the job with version
-     */
-    public AvroMetadataTable(String filePath, String technicalProjectName, String jobName) {
-        super();
-
-        this.filePath = filePath;
-        this.technicalProjectName = technicalProjectName;
-        this.jobName = jobName;
-    }
-
-    /**
-     * cloned without custom columns by default.
-     */
-    @Override
-    public IMetadataTable clone() {
-        return clone(false);
-    }
-
-    @Override
-    public IMetadataTable clone(boolean withCustoms) {
-        AvroMetadataTable clonedMetadata = null;
-        try {
-            clonedMetadata = new AvroMetadataTable(filePath, technicalProjectName, jobName);
-
-            List<IMetadataColumn> clonedMetaColumns = new ArrayList<IMetadataColumn>();
-            clonedMetadata.setListColumns(clonedMetaColumns);
-            for (int i = 0; i < super.getListColumns().size(); i++) {
-                clonedMetaColumns.add(super.getListColumns().get(i).clone(withCustoms));
-            }
-            List<IMetadataColumn> clonedMetaUnusedColumns = new ArrayList<IMetadataColumn>();
-            clonedMetadata.setUnusedColumns(clonedMetaUnusedColumns);
-            for (int i = 0; i < super.getListUnusedColumns().size(); i++) {
-                clonedMetaColumns.add(super.getListUnusedColumns().get(i).clone(withCustoms));
-            }
-            clonedMetadata.setTableName(this.getTableName());
-            clonedMetadata.setLabel(this.getLabel());
-            clonedMetadata.setAdditionalProperties(new HashMap<String, String>(super.getAdditionalProperties()));
-            clonedMetadata.setConnectionTypeName(connectionTypeName);
-
-            clonedMetadata.setAttachedConnector(this.getAttachedConnector());
-        } catch (Exception e) {
-            // e.printStackTrace();
-            ExceptionHandler.process(e);
-        }
-        return clonedMetadata;
-    }
-
-    /**
-     * Generate the avro file associated to the current MetadataTable.
-     *
-     * @param connectionName The name of the current connection. This parameter will be use to generate the file name.
-     */
-    public void generateAvroFile(String connectionName) {
-        this.connectionTypeName = connectionName + "Struct"; //$NON-NLS-1$
-        schema = generateAvroSchema(connectionName, connectionTypeName);
-        // TUP-2826
-        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-        // use current bundle class loader always.
-        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-
-        try {
-            // Generate the java class from the schema
-            SpecificCompiler compiler = new SpecificCompiler(schema);
-            compiler.setTemplateDir(AVRO_TEMPLATE_DIR);
-            compiler.setFieldVisibility(FieldVisibility.PUBLIC);
-
-            // Allow String java class
-            compiler.setStringType(StringType.String);
-            // No source, since we just want to parse the input schema
-            compiler.compileToDestination(null, new File(filePath));
-
-            // Generate the java bean from the schema
-            schema = generateAvroSchema(connectionName, connectionTypeName + "BeanInfo"); //$NON-NLS-1$
-            compiler = new SpecificCompiler(schema);
-            compiler.setTemplateDir(AVRO_TEMPLATE_BEAN_DIR);
-            compiler.setFieldVisibility(FieldVisibility.PUBLIC);
-            // Allow String java class
-            compiler.setStringType(StringType.String);
-            // No source, since we just want to parse the input schema
-            compiler.compileToDestination(null, new File(filePath));
-        } catch (Throwable e) {
-            ExceptionHandler.process(e);
-        } finally {
-            Thread.currentThread().setContextClassLoader(originalClassLoader);
-        }
-    }
-
-    /**
-     *
-     * Generate the avro schema associated to the current MetadataTable.
-     *
-     * @param connectionName The name of the current connection. This parameter will be use to generate the file name.
-     */
-    private Schema generateAvroSchema(String connectionName, String fileName) {
-        // Initialize the file with global parameters
-        FieldAssembler<Schema> fieldAssembler = SchemaBuilder.record(fileName).prop(connectionName, connectionName)
-                .namespace(technicalProjectName + "." + jobName) //$NON-NLS-1$
-                .fields();
-
-        // Generate a field for each column of the metadatatable
-        for (IMetadataColumn column : super.getListColumns()) {
-            // Set field name
-            BaseFieldTypeBuilder<Schema> fieldTypeSchema = fieldAssembler.name(column.getLabel()).type();
-
-            // Set Nullable
-            if (column.isNullable()) {
-                fieldTypeSchema = ((FieldTypeBuilder<Schema>) fieldTypeSchema).nullable();
-            }
-
-            // Set field type
-            if ("id_Boolean".equals(column.getTalendType())) { //$NON-NLS-1$
-                fieldTypeSchema.booleanType().noDefault();
-            } else if ("id_Byte".equals(column.getTalendType())) { //$NON-NLS-1$
-                // TODO No native type byte
-                fieldTypeSchema.stringBuilder().prop("java-class", "java.lang.Byte").endString().noDefault(); //$NON-NLS-1$  //$NON-NLS-2$
-            } else if ("id_byte[]".equals(column.getTalendType())) { //$NON-NLS-1$
-                // TODO is a byteBuffer
-                fieldTypeSchema.bytesType().noDefault();
-            } else if ("id_Character".equals(column.getTalendType())) { //$NON-NLS-1$
-                // TODO No native type char
-                fieldTypeSchema.stringBuilder().prop("java-class", "java.lang.Character").endString().noDefault(); //$NON-NLS-1$  //$NON-NLS-2$
-            } else if ("id_Date".equals(column.getTalendType())) { //$NON-NLS-1$
-                fieldTypeSchema.stringBuilder().prop("java-class", "java.util.Date").endString().noDefault(); //$NON-NLS-1$  //$NON-NLS-2$
-            } else if ("id_Double".equals(column.getTalendType())) { //$NON-NLS-1$
-                fieldTypeSchema.doubleType().noDefault();
-            } else if ("id_Float".equals(column.getTalendType())) { //$NON-NLS-1$
-                fieldTypeSchema.floatType().noDefault();
-            } else if ("id_BigDecimal".equals(column.getTalendType())) { //$NON-NLS-1$
-                fieldTypeSchema.stringBuilder().prop("java-class", "java.math.BigDecimal").endString().noDefault(); //$NON-NLS-1$  //$NON-NLS-2$
-            } else if ("id_Integer".equals(column.getTalendType())) { //$NON-NLS-1$
-                fieldTypeSchema.intType().noDefault();
-            } else if ("id_Long".equals(column.getTalendType())) { //$NON-NLS-1$
-                fieldTypeSchema.longType().noDefault();
-            } else if ("id_Short".equals(column.getTalendType())) { //$NON-NLS-1$
-                // TODO No native type short
-                fieldTypeSchema.stringBuilder().prop("java-class", "java.lang.Short").endString().noDefault(); //$NON-NLS-1$  //$NON-NLS-2$
-            } else if ("id_String".equals(column.getTalendType())) { //$NON-NLS-1$
-                fieldTypeSchema.stringBuilder().prop("java-class", "java.lang.String").endString().noDefault(); //$NON-NLS-1$  //$NON-NLS-2$
-            } else if ("id_List".equals(column.getTalendType())) { //$NON-NLS-1$
-                fieldTypeSchema.stringBuilder().prop("java-class", "java.util.List").endString().noDefault(); //$NON-NLS-1$  //$NON-NLS-2$
-            } else if ("id_Document".equals(column.getTalendType())) { //$NON-NLS-1$
-                fieldTypeSchema.stringBuilder().prop("java-class", "routines.system.Document").endString().noDefault(); //$NON-NLS-1$  //$NON-NLS-2$
-            } else if ("id_Dynamic".equals(column.getTalendType())) { //$NON-NLS-1$
-                fieldTypeSchema.stringBuilder().prop("java-class", "routines.system.Dynamic").endString().noDefault(); //$NON-NLS-1$  //$NON-NLS-2$
-            } else { // Object
-                fieldTypeSchema.stringBuilder().prop("java-class", "java.lang.Object").endString().noDefault(); //$NON-NLS-1$  //$NON-NLS-2$
-            }
-        }
-
-        return fieldAssembler.endRecord();
+    public AvroMetadataTable(Object ignored) {
+        //
     }
 
     public void setConnectionTypeName(String connectionName) {
-        this.connectionTypeName = connectionName;
+        this.connectionName = connectionName;
     }
 
     public String getConnectionTypeName() {
-        return this.connectionTypeName;
+        if (connectionName != null) {
+            return connectionName;
+        }
+        if (dedup != null) {
+            for (Map.Entry<IMetadataTable, String> existingTables : dedup.entrySet()) {
+                if (hasSameMetadata(this, existingTables.getKey())) {
+                    connectionName = existingTables.getValue();
+                    return connectionName;
+                }
+            }
+        }
+        return null; // This should never occur
     }
+
+    /**
+     * Check is two MetadataTable have the same metadata. Two metadata are the same if their columns share names and
+     * types.
+     * 
+     * @param input input metadatatable
+     * @param output output metadatatable
+     * @return true If the two tables have columns that can reuse the same Avro structure.
+     */
+    private boolean hasSameMetadata(IMetadataTable input, IMetadataTable output) {
+        // Error case => not the same metadata
+        if ((input.getListColumns() == null) || (output.getListColumns() == null)
+                || (input.getListColumns().size() != output.getListColumns().size())) {
+            return false;
+        }
+        for (IMetadataColumn inColumn : input.getListColumns()) {
+            IMetadataColumn outColumn = output.getColumn(inColumn.getLabel());
+            if ((outColumn == null) || (!inColumn.getTalendType().equals(outColumn.getTalendType()))) {
+                // Something not similar => not the same metadata
+                return false;
+            }
+        }
+        // Every label is mapped => same metadata
+        return true;
+    }
+
 }
