@@ -65,6 +65,8 @@ public class ExtendedContextColumnPropertyAccessor<R> implements IColumnProperty
 
     private final static String JOB_CONTEXT = " (from job)";
 
+    private final static String DATASET_CONTEXT = " (from dataSet)";
+
     private final static String REPOSITORYT_CONTEXT = " (from repository context)";
 
     /**
@@ -157,6 +159,8 @@ public class ExtendedContextColumnPropertyAccessor<R> implements IColumnProperty
                         } else {
                             return contextParaName + REPOSITORYT_CONTEXT;
                         }
+                    } else if (sourceId.equals("testContainer_dataset")) {
+                        return contextParaName + DATASET_CONTEXT;
                     }
                 } else {
                     return contextParaName;
