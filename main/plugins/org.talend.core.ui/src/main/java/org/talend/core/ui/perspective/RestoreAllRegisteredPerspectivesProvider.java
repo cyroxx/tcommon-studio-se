@@ -12,7 +12,9 @@
 // ============================================================================
 package org.talend.core.ui.perspective;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -30,6 +32,7 @@ import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.ElementMatcher;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.nebula.widgets.nattable.util.ArrayUtil;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveFactory;
@@ -137,12 +140,17 @@ public class RestoreAllRegisteredPerspectivesProvider {
         // find the selected perspective to re-select it after all perspective creation
         MPerspectiveStack mPerspStack = getMPerspectiveStack();
         MPerspective initialSelectedPerspective = null;
+        Set<String> showPersArr = new HashSet<String>();
+        showPersArr.addAll(ArrayUtil.asCollection(showPerspectiveIds));
         if (mPerspStack != null) {
+            for (MPerspective mp : mPerspStack.getChildren()) {
+                showPersArr.add(mp.getElementId());
+            }
             initialSelectedPerspective = mPerspStack.getSelectedElement();
         }
 
         // create the perspectives.
-        for (String perspId : showPerspectiveIds) {
+        for (String perspId : showPersArr.toArray(new String[0])) {
             restorePerspective(mPerspStack, perspId);
         }
 
@@ -207,73 +215,79 @@ public class RestoreAllRegisteredPerspectivesProvider {
 
             IPerspectiveRegistry perspectiveRegistry = workbench.getPerspectiveRegistry();
             IPerspectiveDescriptor perspDesc = perspectiveRegistry.findPerspectiveWithId(id);
-            if (perspDesc != null) {
-                // find the existed.
-                if (mPerspStack != null) {
-                    for (MPerspective mp : mPerspStack.getChildren()) {
-                        if (mp.getElementId().equals(id)) { // existed.
-                            mPersp = mp;
-                            break;
-                        } else { // try to check custom perspective. (the element id should be different with id.)
-                            IPerspectiveDescriptor persp = perspectiveRegistry.findPerspectiveWithId(mp.getElementId());
-                            if (persp != null && persp instanceof PerspectiveDescriptor) {
-                                PerspectiveDescriptor pd = (PerspectiveDescriptor) persp;
+            // find the existed.
+            if (mPerspStack != null) {
+                for (MPerspective mp : mPerspStack.getChildren()) {
+                    if (mp.getElementId().equals(id)) { // existed.
+                        mPersp = mp;
+                        break;
+                    } else { // try to check custom perspective. (the element id should be different with id.)
+                        IPerspectiveDescriptor persp = perspectiveRegistry.findPerspectiveWithId(mp.getElementId());
+                        if (persp != null && persp instanceof PerspectiveDescriptor) {
+                            PerspectiveDescriptor pd = (PerspectiveDescriptor) persp;
 
-                                // if custom perspective, the original id and id are different.
-                                if (!pd.getOriginalId().equals(pd.getId()) //
-                                        && pd.getOriginalId().equals(id)) { // when custom, just use it.
-                                    mPersp = mp;
-                                    break;
-                                }
+                            // if custom perspective, the original id and id are different.
+                            if (!pd.getOriginalId().equals(pd.getId()) //
+                                    && pd.getOriginalId().equals(id)) { // when custom, just use it.
+                                mPersp = mp;
+                                break;
                             }
                         }
-
                     }
+
+                }
+            }
+            if (perspDesc == null) {
+                if (mPersp != null) {
+                    mPerspStack.getChildren().remove(mPersp);
+                }
+                return;
+            }
+            // create new
+            if (mPersp == null) { // copied some form method setPerspective of class WorkbenchPage
+                String perspId = perspDesc.getId();
+
+                WorkbenchPage workbenchPage = (WorkbenchPage) workbench.getActiveWorkbenchWindow().getActivePage();
+
+                mPersp = (MPerspective) fModelService.cloneSnippet(fApp, perspId, fWindow);
+
+                if (mPersp == null) {
+
+                    // couldn't find the perspective, create a new one
+                    mPersp = fModelService.createModelElement(MPerspective.class);
+
+                    // tag it with the same id
+                    mPersp.setElementId(perspDesc.getId());
+
+                    // instantiate the perspective
+                    IPerspectiveFactory factory = ((PerspectiveDescriptor) perspDesc).createFactory();
+                    ModeledPageLayout modelLayout = new ModeledPageLayout(fWindow, fModelService, fPartService, mPersp,
+                            perspDesc, workbenchPage, true);
+                    factory.createInitialLayout(modelLayout);
+                    PerspectiveTagger.tagPerspective(mPersp, fModelService);
+                    PerspectiveExtensionReader reader = new PerspectiveExtensionReader();
+                    reader.extendLayout(getExtensionTracker(workbenchPage.getWorkbenchWindow().getShell().getDisplay()),
+                            perspDesc.getId(), modelLayout);
                 }
 
-                // create new
-                if (mPersp == null) { // copied some form method setPerspective of class WorkbenchPage
-                    String perspId = perspDesc.getId();
+                mPersp.setLabel(perspDesc.getLabel());
 
-                    WorkbenchPage workbenchPage = (WorkbenchPage) workbench.getActiveWorkbenchWindow().getActivePage();
+                ImageDescriptor imageDescriptor = perspDesc.getImageDescriptor();
+                if (imageDescriptor != null) {
+                    String imageURL = MenuHelper.getImageUrl(imageDescriptor);
+                    mPersp.setIconURI(imageURL);
+                }
 
-                    mPersp = (MPerspective) fModelService.cloneSnippet(fApp, perspId, fWindow);
+                // Hide placeholders for parts that exist in the 'global' areas
+                fModelService.hideLocalPlaceholders(fWindow, mPersp);
 
-                    if (mPersp == null) {
+                // add it to the stack
+                mPerspStack.getChildren().add(mPersp);
 
-                        // couldn't find the perspective, create a new one
-                        mPersp = fModelService.createModelElement(MPerspective.class);
-
-                        // tag it with the same id
-                        mPersp.setElementId(perspDesc.getId());
-
-                        // instantiate the perspective
-                        IPerspectiveFactory factory = ((PerspectiveDescriptor) perspDesc).createFactory();
-                        ModeledPageLayout modelLayout = new ModeledPageLayout(fWindow, fModelService, fPartService, mPersp,
-                                perspDesc, workbenchPage, true);
-                        factory.createInitialLayout(modelLayout);
-                        PerspectiveTagger.tagPerspective(mPersp, fModelService);
-                        PerspectiveExtensionReader reader = new PerspectiveExtensionReader();
-                        reader.extendLayout(getExtensionTracker(workbenchPage.getWorkbenchWindow().getShell().getDisplay()),
-                                perspDesc.getId(), modelLayout);
-                    }
-
-                    mPersp.setLabel(perspDesc.getLabel());
-
-                    ImageDescriptor imageDescriptor = perspDesc.getImageDescriptor();
-                    if (imageDescriptor != null) {
-                        String imageURL = MenuHelper.getImageUrl(imageDescriptor);
-                        mPersp.setIconURI(imageURL);
-                    }
-
-                    // Hide placeholders for parts that exist in the 'global' areas
-                    fModelService.hideLocalPlaceholders(fWindow, mPersp);
-
-                    // add it to the stack
-                    mPerspStack.getChildren().add(mPersp);
-
-                }// else already create so do nothing
-            }// else { // can't find or not be loaded.
+            }// else already create so do nothing
+             // } else { // can't find or not be loaded.
+             // mPerspStack.getChildren().remove(perspDesc)
+             // }
 
         }
     }
