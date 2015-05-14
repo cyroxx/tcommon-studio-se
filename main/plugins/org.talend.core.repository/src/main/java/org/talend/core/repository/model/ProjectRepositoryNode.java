@@ -112,8 +112,6 @@ import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryConstants;
 import org.talend.repository.model.RepositoryNode;
 import org.talend.repository.model.StableRepositoryNode;
-import org.talend.repository.model.IRepositoryNode.ENodeType;
-import org.talend.repository.model.IRepositoryNode.EProperties;
 import org.talend.repository.model.nodes.IProjectRepositoryNode;
 import org.talend.utils.sql.ConnectionUtils;
 
@@ -889,13 +887,18 @@ public class ProjectRepositoryNode extends RepositoryNode implements IProjectRep
             if (label.equals("bin") || label.startsWith(".")) { //$NON-NLS-1$ //$NON-NLS-2$
                 continue;
             }
+            // currently, only process the docs for job, joblet and route.
+            if (type.equals(ERepositoryObjectType.JOB_DOC) || type.equals(ERepositoryObjectType.JOBLET_DOC)
+                    || type.equals(ERepositoryObjectType.JOBS) || type.equals(ERepositoryObjectType.JOBLETS)
+                    || type.equals(ERepositoryObjectType.valueOf("ROUTE_DOCS"))//$NON-NLS-1$ 
+                    || type.equals(ERepositoryObjectType.valueOf("ROUTE_DOC"))) {//$NON-NLS-1$ 
+                boolean isJobDocRootFolder = ((label.indexOf("_") != -1) && (label.indexOf(".") != -1)); //$NON-NLS-1$ //$NON-NLS-2$
+                boolean isPicFolderName = label.equals(IHTMLDocConstants.PIC_FOLDER_NAME);
 
-            boolean isJobDocRootFolder = ((label.indexOf("_") != -1) && (label.indexOf(".") != -1)); //$NON-NLS-1$ //$NON-NLS-2$
-            boolean isPicFolderName = label.equals(IHTMLDocConstants.PIC_FOLDER_NAME);
-
-            // Do not show job documentation root folder and Foder "pictures" on the repository view.
-            if (isJobDocRootFolder || isPicFolderName) {
-                continue;
+                // Do not show job documentation root folder and Foder "pictures" on the repository view.
+                if (isJobDocRootFolder || isPicFolderName) {
+                    continue;
+                }
             }
             // for system folder
             if (RepositoryConstants.SYSTEM_DIRECTORY.equals(label)) {
