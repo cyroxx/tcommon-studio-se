@@ -112,6 +112,9 @@ public final class JavaUtils {
     /** Java contexts Directory. */
     public static final String JAVA_CONTEXTS_DIRECTORY = "contexts"; //$NON-NLS-1$
 
+    /** Java datass Directory. */
+    public static final String JAVA_DATAS_DIRECTORY = "datas"; //$NON-NLS-1$
+
     /** Java ClassPath Separator. */
     public static final String JAVA_CLASSPATH_SEPARATOR = (Platform.getOS().compareTo(Platform.WS_WIN32) == 0) ? ";" : ":"; //$NON-NLS-1$ //$NON-NLS-2$
 
