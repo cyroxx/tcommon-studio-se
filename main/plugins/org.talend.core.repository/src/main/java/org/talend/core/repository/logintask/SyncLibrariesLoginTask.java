@@ -15,9 +15,10 @@ import org.talend.commons.utils.time.TimeMeasure;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.ICoreService;
 import org.talend.core.repository.i18n.Messages;
+import org.talend.login.AbstractLoginTask;
 import org.talend.repository.ProjectManager;
 
-public class SyncLibrariesLoginTask implements IRunnableWithProgress {
+public class SyncLibrariesLoginTask extends AbstractLoginTask implements IRunnableWithProgress {
 
     private static ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
 

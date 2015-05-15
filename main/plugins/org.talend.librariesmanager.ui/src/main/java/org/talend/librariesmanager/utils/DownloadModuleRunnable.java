@@ -102,8 +102,7 @@ abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
                             File destination = new File(target.toString() + File.separator + module.getName());
                             File destinationTemp = target.createTempFile(destination.getName(), ".jar");
                             NexusDownloadHelperWithProgress downloader = new NexusDownloadHelperWithProgress();
-                            String mvnProtecal = module.getMavenUrl() + "/" + module.getPackageName();
-                            downloader.download(new URL(null, mvnProtecal, new Handler()), null, subMonitor.newChild(1));
+                            downloader.download(new URL(null, module.getMavenUri(), new Handler()), null, subMonitor.newChild(1));
                             // if the jar had download complete , will copy it from system temp path to "lib/java"
                             if (!monitor.isCanceled()) {
                                 FilesUtils.copyFile(destinationTemp, destination);

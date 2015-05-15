@@ -635,10 +635,12 @@ public class ModulesNeededProvider {
         boolean required = new Boolean(current.getAttribute(ExtensionModuleManager.REQUIRED_ATTR));
         String uripath = current.getAttribute(ExtensionModuleManager.URIPATH_ATTR);
         uripath = ExtensionModuleManager.getInstance().getFormalModulePath(uripath, current);
+        String mvn_rui = current.getAttribute(ExtensionModuleManager.MVN_URI_ATTR);
         ModuleNeeded module = new ModuleNeeded(context, name, message, required);
         module.setModuleLocaion(uripath);
         module.setId(id);
         module.setBundleName(current.getAttribute(ExtensionModuleManager.BUNDLEID_ATTR));
+        module.setMavenUri(mvn_rui);
         return module;
     }
 

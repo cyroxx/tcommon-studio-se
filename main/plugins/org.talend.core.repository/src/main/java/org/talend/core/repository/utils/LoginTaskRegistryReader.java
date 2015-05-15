@@ -19,9 +19,9 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.SafeRunner;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.osgi.framework.FrameworkUtil;
 import org.talend.core.utils.RegistryReader;
+import org.talend.login.ILoginTask;
 
 /**
  * This provides data for extensions points extending org.talend.core.repository.loginTask
@@ -36,7 +36,7 @@ public class LoginTaskRegistryReader extends RegistryReader {
 
     static class LoginTask {
 
-        public final IRunnableWithProgress runnable;
+        public final ILoginTask runnable;
 
         public final Priority priority;
 
@@ -51,7 +51,7 @@ public class LoginTaskRegistryReader extends RegistryReader {
         /**
          * DOC sgandon LoginTaskRegistryReader.LoginTask constructor comment.
          */
-        public LoginTask(IRunnableWithProgress runnable, Priority priority) {
+        public LoginTask(ILoginTask runnable, Priority priority) {
             this.runnable = runnable;
             this.priority = priority;
         }
@@ -84,7 +84,7 @@ public class LoginTaskRegistryReader extends RegistryReader {
         super(FrameworkUtil.getBundle(LoginTaskRegistryReader.class).getSymbolicName(), LOGIN_TASK_EXTENSION_POINT);
     }
 
-    public IRunnableWithProgress[] getAllTaskListInstance() {
+    public ILoginTask[] getAllTaskListInstance() {
         if (allLoginTasks == null) {
             allLoginTasks = new ArrayList<LoginTask>();
             readRegistry();
@@ -99,8 +99,8 @@ public class LoginTaskRegistryReader extends RegistryReader {
      * @param allLoginTasks2
      * @return
      */
-    private IRunnableWithProgress[] getAllRunnables(List<LoginTask> allLoginTasks2) {
-        IRunnableWithProgress[] runnables = new IRunnableWithProgress[allLoginTasks2.size()];
+    private ILoginTask[] getAllRunnables(List<LoginTask> allLoginTasks2) {
+        ILoginTask[] runnables = new ILoginTask[allLoginTasks2.size()];
         int i = 0;
         for (LoginTask loginTask : allLoginTasks2) {
             runnables[i++] = loginTask.runnable;
@@ -118,7 +118,11 @@ public class LoginTaskRegistryReader extends RegistryReader {
 
             @Override
             public int compare(LoginTask arg0, LoginTask arg1) {
-                return arg1.priority.compareTo(arg0.priority);
+                int priority = arg1.priority.compareTo(arg0.priority);
+                if (priority == 0) {
+                    return arg0.runnable.getOrder().compareTo(arg1.runnable.getOrder());
+                }
+                return priority;
             }
         });
 
@@ -136,7 +140,7 @@ public class LoginTaskRegistryReader extends RegistryReader {
 
                 @Override
                 public void run() throws Exception {
-                    IRunnableWithProgress runnable = (IRunnableWithProgress) element.createExecutableExtension(CLASS_ATTRIBUTE);
+                    ILoginTask runnable = (ILoginTask) element.createExecutableExtension(CLASS_ATTRIBUTE);
                     String priorityString = element.getAttribute(PRIORITY_ATTRIBUTE);
                     LoginTask.Priority priority = (priorityString != null && priorityString.length() > 0) ? LoginTask.Priority
                             .valueOf(priorityString.toUpperCase()) : LoginTask.Priority.NORMAL;

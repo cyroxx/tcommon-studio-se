@@ -116,7 +116,7 @@ public class MavenUrlHelper {
 
     /**
      * will build the mvn url with default groupId and version.
-     * "mvn:org.talend.libraries/<jarNameWithoutExtension>/6.0.0/<extension>"
+     * "mvn:org.talend.libraries/<jarNameWithoutExtension>/1.0.0/<extension>"
      */
     public static String generateMvnUrlForJarName(String jarName) {
         if (jarName != null && jarName.length() > 0) {

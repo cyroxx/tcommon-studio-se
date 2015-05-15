@@ -14,10 +14,8 @@ package org.talend.core.model.general;
 
 import java.util.List;
 
-import org.talend.commons.exception.ExceptionHandler;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.runtime.CoreRuntimePlugin;
-import org.talend.core.runtime.maven.MavenUrlHelper;
 
 /**
  * This bean is use to manage needed moduless (perl) and libraries (java).<br/>
@@ -50,13 +48,11 @@ public class ModuleNeeded {
 
     private boolean isShow = true;
 
-    List<InstallModule> installModule;
-
     List<String> installURL;
 
     private String moduleLocaion;
 
-    private String mavenUrl;
+    private String mavenUri;
 
     public static final String SINGLE_QUOTE = "'"; //$NON-NLS-1$
 
@@ -101,7 +97,7 @@ public class ModuleNeeded {
         this.required = required;
         this.installURL = installURL;
         this.requiredIf = requiredIf;
-        this.mavenUrl = mavenUrl;
+        this.mavenUri = mavenUrl;
     }
 
     public String getRequiredIf() {
@@ -168,14 +164,6 @@ public class ModuleNeeded {
      */
     public void setContext(String component) {
         this.context = component;
-    }
-
-    public List<InstallModule> getInstallModule() {
-        return this.installModule;
-    }
-
-    public void setInstallModule(List<InstallModule> installModule) {
-        this.installModule = installModule;
     }
 
     public String getInformationMsg() {
@@ -392,17 +380,8 @@ public class ModuleNeeded {
      * 
      * @return the mavenUrl
      */
-    public String getMavenUrl() {
-        if (mavenUrl == null || "".equals(mavenUrl) || !mavenUrl.startsWith(MavenUrlHelper.MVN_PROTOCOL)) {
-            return getDefaulMavenUrl();
-        }
-        return this.mavenUrl;
-    }
-
-    private String getDefaulMavenUrl() {
-        ExceptionHandler.log("Warning : the groupid and version in the url may not be correct");
-        return MavenUrlHelper.generateMvnUrlForJarName(moduleName);
-
+    public String getMavenUri() {
+        return this.mavenUri;
     }
 
     /**
@@ -410,8 +389,8 @@ public class ModuleNeeded {
      * 
      * @param mavenUrl the mavenUrl to set
      */
-    public void setMavenUrl(String mavenUrl) {
-        this.mavenUrl = mavenUrl;
+    public void setMavenUri(String mavenUri) {
+        this.mavenUri = mavenUri;
     }
 
 }

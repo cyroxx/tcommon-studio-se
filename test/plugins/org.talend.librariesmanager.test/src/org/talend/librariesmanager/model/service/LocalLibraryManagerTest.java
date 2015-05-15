@@ -20,7 +20,6 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -94,10 +93,6 @@ public class LocalLibraryManagerTest {
         String librariesPath = LibrariesManagerUtils.getLibrariesPath(ECodeLanguage.JAVA);
         File storageDir = new File(librariesPath);
         String installLocation = storageDir.getAbsolutePath();
-        File indexFile = new File(installLocation + JAR_INDEX);
-        if (indexFile.exists()) {
-            LibrariesIndexManager.getInstance().loadResource();
-        }
         IComponentsService service = (IComponentsService) GlobalServiceRegister.getDefault().getService(IComponentsService.class);
         Map<String, File> componentsFolders = service.getComponentsFactory().getComponentsProvidersFolder();
         Set<String> contributeIdSet = componentsFolders.keySet();
@@ -133,7 +128,7 @@ public class LocalLibraryManagerTest {
                     FilesUtils.copyFile(file, target);
                 }
             } else {
-                LibrariesIndex index = LibrariesIndexManager.getInstance().getIndex();
+                LibrariesIndex index = LibrariesIndexManager.getInstance().getStudioLibIndex();
                 EMap<String, String> jarsToRelativePath = index.getJarsToRelativePath();
                 List<File> jarFiles = FilesUtils.getJarFilesFromFolder(file, null);
                 boolean modified = false;
@@ -152,7 +147,7 @@ public class LocalLibraryManagerTest {
                         }
                     }
                     if (modified) {
-                        LibrariesIndexManager.getInstance().saveResource();
+                        LibrariesIndexManager.getInstance().saveStudioIndexResource();
                     }
                 }
             }
@@ -170,7 +165,6 @@ public class LocalLibraryManagerTest {
     public void testRetrieveStringStringIProgressMonitorArray() throws IOException {
         String pathToStore = LibrariesManagerUtils.getLibrariesPath(ECodeLanguage.JAVA);
         String jarNeeded = "mysql-connector-java-5.1.0-bin.jar";
-        LibrariesIndexManager.getInstance().loadResource();
         String sourcePath = null, targetPath = pathToStore;
         List<File> jarFiles = FilesUtils.getJarFilesFromFolder(getStorageDirectory(), jarNeeded);
         if (jarFiles.size() > 0) {
@@ -185,7 +179,7 @@ public class LocalLibraryManagerTest {
         }
         // retrieve jar from the index.xml if not find in lib/java
         else {
-            EMap<String, String> jarsToRelative = LibrariesIndexManager.getInstance().getIndex().getJarsToRelativePath();
+            EMap<String, String> jarsToRelative = LibrariesIndexManager.getInstance().getStudioLibIndex().getJarsToRelativePath();
             String relativePath = jarsToRelative.get(jarNeeded);
             if (relativePath == null) {
                 return;
@@ -234,8 +228,7 @@ public class LocalLibraryManagerTest {
             }
         }
 
-        LibrariesIndexManager.getInstance().loadResource();
-        EMap<String, String> jarsToRelative = LibrariesIndexManager.getInstance().getIndex().getJarsToRelativePath();
+        EMap<String, String> jarsToRelative = LibrariesIndexManager.getInstance().getStudioLibIndex().getJarsToRelativePath();
         names.addAll(jarsToRelative.keySet());
 
         assertTrue(names.size() > 0);
@@ -255,8 +248,7 @@ public class LocalLibraryManagerTest {
                 names.add(file.getName());
             }
         }
-        LibrariesIndexManager.getInstance().loadResource();
-        EMap<String, String> jarsToRelative = LibrariesIndexManager.getInstance().getIndex().getJarsToRelativePath();
+        EMap<String, String> jarsToRelative = LibrariesIndexManager.getInstance().getStudioLibIndex().getJarsToRelativePath();
         names.addAll(jarsToRelative.keySet());
 
         List<String> allJars = new ArrayList<String>();
@@ -296,36 +288,36 @@ public class LocalLibraryManagerTest {
         }
         assertTrue(missJars.size() == 0);
     }
-    
+
     @Test
     public void testUnusedJars() throws URISyntaxException {
-        
+
         Bundle currentBundle = Platform.getBundle("org.talend.librariesmanager"); //$NON-NLS-1$
         Bundle[] bundles = currentBundle.getBundleContext().getBundles();
         Long totalSize = 0L;
         StringBuffer strBuff = new StringBuffer();
         List<String> neededJars = new ArrayList<String>();
         ModulesNeededProvider.reset();
-        for (ModuleNeeded module: ModulesNeededProvider.getModulesNeeded()) {
+        for (ModuleNeeded module : ModulesNeededProvider.getModulesNeeded()) {
             if (module.getStatus() != ELibraryInstallStatus.UNUSED) {
                 neededJars.add(module.getModuleName());
             }
         }
-        for (Bundle bundle: bundles) {
+        for (Bundle bundle : bundles) {
             String name = bundle.getSymbolicName();
             if (name.startsWith("org.talend.libraries")) {
-                String classpath = (String) bundle.getHeaders().get("Bundle-ClassPath");
+                String classpath = bundle.getHeaders().get("Bundle-ClassPath");
                 List<URL> urls = FilesUtils.getFilesFromFolder(bundle, "/lib", ".jar", true, true);
                 for (URL url : urls) {
                     String jarFile = new Path(url.getFile()).lastSegment();
                     if (!neededJars.contains(jarFile) && (classpath == null || !classpath.contains(jarFile))) {
                         File file = new File(url.toURI());
                         Long fileSize = file.length();
-                        String path = url.getPath().substring(url.getPath().indexOf("/plugins/")+9);
-                        strBuff.append(path+" : "+fileSize+"\n");
+                        String path = url.getPath().substring(url.getPath().indexOf("/plugins/") + 9);
+                        strBuff.append(path + " : " + fileSize + "\n");
                         totalSize += fileSize;
                     }
-                    
+
                 }
             }
             if (name.contains(".components.")) {
@@ -335,16 +327,16 @@ public class LocalLibraryManagerTest {
                     if (!neededJars.contains(jarFile)) {
                         File file = new File(url.toURI());
                         Long fileSize = file.length();
-                        String path = url.getPath().substring(url.getPath().indexOf("/plugins/")+9);
-                        strBuff.append(path+" : "+fileSize+"\n");
+                        String path = url.getPath().substring(url.getPath().indexOf("/plugins/") + 9);
+                        strBuff.append(path + " : " + fileSize + "\n");
                         totalSize += fileSize;
                     }
                 }
             }
         }
-        
+
         if (strBuff.length() != 0) {
-            fail("Unused jars still in product (total byte size: "+totalSize+"):\n"+strBuff);
+            fail("Unused jars still in product (total byte size: " + totalSize + "):\n" + strBuff);
         }
     }
 

@@ -36,4 +36,22 @@
          </library>
       </systemRoutine>
    </extension>
+   <extension
+         point="org.talend.core.repository.login.task">
+      <loginTask
+            class="org.talend.librariesmanager.migration.DeployLibJavaToMavenLoginTask"
+            priority="lowest">
+      </loginTask>
+   </extension>
+   <extension
+         point="org.talend.core.migrationTask">
+      <projecttask
+            beforeLogon="false"
+            breaks="6.0.0"
+            class="org.talend.librariesmanager.migration.DeployLibJavaToMavenMigrationTask"
+            id="org.talend.librariesmanager.migration.DeployLibJavaToMavenMigrationTask"
+            name="DeployLibJavaToMavenMigrationTask"
+            version="6.0.0">
+      </projecttask>
+   </extension>
 </plugin>

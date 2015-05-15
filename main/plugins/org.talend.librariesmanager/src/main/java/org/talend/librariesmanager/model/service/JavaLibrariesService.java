@@ -16,40 +16,27 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
-import org.talend.commons.exception.CommonExceptionHandler;
-import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.io.FilesUtils;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.ILibraryManagerService;
 import org.talend.core.ILibraryManagerUIService;
-import org.talend.core.PluginChecker;
 import org.talend.core.language.ECodeLanguage;
-import org.talend.core.model.components.IComponent;
 import org.talend.core.model.components.IComponentsService;
 import org.talend.core.model.general.ModuleNeeded;
 import org.talend.core.model.general.ModuleNeeded.ELibraryInstallStatus;
-import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.routines.IRoutinesProvider;
-import org.talend.core.runtime.maven.MavenArtifact;
-import org.talend.core.runtime.maven.MavenUrlHelper;
 import org.talend.core.utils.TalendCacheUtils;
 import org.talend.designer.codegen.PigTemplate;
-import org.talend.designer.maven.utils.PomUtil;
 import org.talend.librariesmanager.i18n.Messages;
 import org.talend.librariesmanager.model.ModulesNeededProvider;
 import org.talend.librariesmanager.prefs.LibrariesManagerUtils;
-import org.talend.repository.ProjectManager;
 
 /**
  * DOC smallet class global comment. Detailled comment <br/>
@@ -180,18 +167,6 @@ public class JavaLibrariesService extends AbstractLibrariesService {
         for (ModuleNeeded current : toCheck) {
             if (existLibraries.contains(current.getModuleName())) {
                 current.setStatus(ELibraryInstallStatus.INSTALLED);
-            } else {
-                current.setStatus(ELibraryInstallStatus.NOT_INSTALLED);
-                // check from maven repository
-                boolean exist = false;
-                String mavenUrl = current.getMavenUrl();
-                MavenArtifact mvnArtifact = MavenUrlHelper.parseMvnUrl(mavenUrl);
-                if (mvnArtifact != null) {
-                    exist = PomUtil.isAvailable(mvnArtifact);
-                }
-                if (exist) {
-                    current.setStatus(ELibraryInstallStatus.INSTALLED);
-                }
             }
         }
 
@@ -209,124 +184,15 @@ public class JavaLibrariesService extends AbstractLibrariesService {
         // do nothing
     }
 
-    private void deployComponentsLibs(IProgressMonitor... monitorWrap) throws IOException {
-        Set<String> libsNeededForComponents = new HashSet<String>();
-        Map<String, String> libsToRelativePath = new HashMap<String, String>();
-
-        IComponentsService service = (IComponentsService) GlobalServiceRegister.getDefault().getService(IComponentsService.class);
-        deploy(service.getComponentsFactory().getComponents(), libsNeededForComponents, libsToRelativePath, monitorWrap);
-
-        Map<String, File> componentsFolders = service.getComponentsFactory().getComponentsProvidersFolder();
-        Set<String> contributeIdSet = componentsFolders.keySet();
-        for (String contributeID : contributeIdSet) {
-            File file = new File(componentsFolders.get(contributeID).toURI());
-            if ("org.talend.designer.components.model.UserComponentsProvider".contains(contributeID)
-                    || "org.talend.designer.components.exchange.ExchangeComponentsProvider".contains(contributeID)) {
-                File target = new File(getStorageDirectory(), file.getName());
-                if (file.isDirectory()) {
-                    List<File> jarFiles = FilesUtils.getJarFilesFromFolder(file, null);
-                    if (jarFiles.size() > 0) {
-                        for (File jarFile : jarFiles) {
-                            String name = jarFile.getName();
-                            if (!libsNeededForComponents.contains(name)) {
-                                continue;
-                            }
-                            FilesUtils.copyFile(jarFile, target);
-                        }
-                    }
-                } else {
-                    FilesUtils.copyFile(file, target);
-                }
-            } else {
-                List<File> jarFiles = FilesUtils.getJarFilesFromFolder(file, null);
-                if (jarFiles.size() > 0) {
-                    for (File jarFile : jarFiles) {
-                        String name = jarFile.getName();
-                        if (!libsNeededForComponents.contains(name)) {
-                            continue;
-                        }
-                        String path = libsToRelativePath.get(name);
-                        int lengthBasePath = new Path(file.getParentFile().getAbsolutePath()).toPortableString().length();
-                        String relativePath = new Path(jarFile.getAbsolutePath()).toPortableString().substring(lengthBasePath);
-                        String moduleLocation = "platform:/plugin/" + contributeID + relativePath;
-                        if (path != null) {
-                            if (path.equals(moduleLocation)) {
-                                continue;
-                            } else {
-                                CommonExceptionHandler
-                                        .warn(name + " is duplicated, locations:" + path + " and:" + moduleLocation);
-                                continue;
-                            }
-                        }
-                        libsToRelativePath.put(name, moduleLocation);
-                    }
-                }
-            }
-        }
-        repositoryBundleService.deploy(libsToRelativePath, monitorWrap);
-    }
-
     private File getStorageDirectory() {
         String librariesPath = LibrariesManagerUtils.getLibrariesPath(ECodeLanguage.JAVA);
         File storageDir = new File(librariesPath);
         return storageDir;
     }
 
-    private void deploy(Set<IComponent> componentList, Set<String> libsNeededForComponents,
-            Map<String, String> libsToRelativePath, IProgressMonitor... monitorWrap) {
-        List<ModuleNeeded> modules = new ArrayList<ModuleNeeded>();
-        Set<String> duplicateLocationJar = new HashSet<String>();
-
-        for (IComponent component : componentList) {
-            modules.addAll(component.getModulesNeeded());
-        }
-        deploy(modules, libsNeededForComponents, libsToRelativePath, duplicateLocationJar, monitorWrap);
-        if (!duplicateLocationJar.isEmpty()) {
-            for (String lib : duplicateLocationJar) {
-                Set<String> components = new HashSet<String>();
-                Set<String> locations = new HashSet<String>();
-                for (ModuleNeeded module : modules) {
-                    if (lib != null && lib.equals(module.getModuleName())) {
-                        components.add(module.getContext());
-                        locations.add(module.getModuleLocaion());
-                    }
-                }
-                CommonExceptionHandler.warn("Library:" + lib + " was defined with different locations.\n"
-                        + "Components who define these jars are:" + components + "\n" + "Locations:" + locations);
-            }
-        }
-    }
-
-    private void deploy(List<ModuleNeeded> modules, Set<String> libsNeededForComponents, Map<String, String> libsToRelativePath,
-            Set<String> duplicateLocationJar, IProgressMonitor... monitorWrap) {
-        for (ModuleNeeded module : modules) {
-            String moduleLocation = module.getModuleLocaion();
-            if (moduleLocation != null && moduleLocation.startsWith("platform:/")) {
-                String relativePath = libsToRelativePath.get(module.getModuleName());
-                if (relativePath != null) {
-                    if (relativePath.equals(moduleLocation)) {
-                        continue;
-                    } else {
-                        if (!duplicateLocationJar.contains(moduleLocation)) {
-                            duplicateLocationJar.add(module.getModuleName());
-                        }
-                    }
-                    if (!repositoryBundleService.checkJarInstalledFromPlatform(moduleLocation)) {
-                        continue;
-                    }
-                }
-                libsToRelativePath.put(module.getModuleName(), moduleLocation);
-            } else {
-                libsNeededForComponents.add(module.getModuleName());
-            }
-        }
-    }
-
     @Override
     public void syncLibraries(IProgressMonitor... monitorWrap) {
-        // check in the libs directory of the project and add the jar with other ones.
-        syncLibrariesFromLibs(monitorWrap);
-
+        // TODO system routine libraries seems no use ,need to check more...
         // deploy system routine libraries
         if (GlobalServiceRegister.getDefault().isServiceRegistered(ILibraryManagerUIService.class)) {
             ILibraryManagerUIService libUiService = (ILibraryManagerUIService) GlobalServiceRegister.getDefault().getService(
@@ -342,11 +208,7 @@ public class JavaLibrariesService extends AbstractLibrariesService {
         if (!repositoryBundleService.isInitialized()) {
             // 2. Components libraries
             if (GlobalServiceRegister.getDefault().isServiceRegistered(IComponentsService.class)) {
-                try {
-                    deployComponentsLibs(monitorWrap);
-                } catch (IOException e) {
-                    ExceptionHandler.process(e);
-                }
+                repositoryBundleService.deployComponentsLibs(monitorWrap);
                 repositoryBundleService.setInitialized();
             }
         }
@@ -395,15 +257,16 @@ public class JavaLibrariesService extends AbstractLibrariesService {
      */
     @Override
     public void syncLibrariesFromLibs(IProgressMonitor... monitorWrap) {
+        // TODO sync project/lib will be done in migration
         // for feature 12877
-        if (PluginChecker.isSVNProviderPluginLoaded()) {
-            String path = new Path(Platform.getInstanceLocation().getURL().getPath()).toFile().getPath();
-            String projectLabel = ProjectManager.getInstance().getCurrentProject().getTechnicalLabel();
-            path = path + File.separatorChar + projectLabel + File.separatorChar
-                    + ERepositoryObjectType.getFolderName(ERepositoryObjectType.LIBS);
-            File libsTargetFile = new File(path);
-            repositoryBundleService.deploy(libsTargetFile.toURI(), monitorWrap);
-        }
+        // if (PluginChecker.isSVNProviderPluginLoaded()) {
+        // String path = new Path(Platform.getInstanceLocation().getURL().getPath()).toFile().getPath();
+        // String projectLabel = ProjectManager.getInstance().getCurrentProject().getTechnicalLabel();
+        // path = path + File.separatorChar + projectLabel + File.separatorChar
+        // + ERepositoryObjectType.getFolderName(ERepositoryObjectType.LIBS);
+        // File libsTargetFile = new File(path);
+        // repositoryBundleService.deploy(libsTargetFile.toURI(), monitorWrap);
+        // }
     }
 
 }

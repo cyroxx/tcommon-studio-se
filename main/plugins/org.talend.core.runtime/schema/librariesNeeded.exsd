@@ -117,6 +117,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="mvn_uri" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 

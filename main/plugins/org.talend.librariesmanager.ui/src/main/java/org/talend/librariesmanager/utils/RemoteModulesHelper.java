@@ -201,10 +201,8 @@ public class RemoteModulesHelper {
                                 ModuleToInstall m = new ModuleToInstall();
                                 //
                                 m.setName(artifactId + "." + packageName);
-                                m.setPackageName(packageName);
-                                m.setGroupId(groupId);
-                                m.setArtifactId(artifactId);
-                                m.setVersion(version);
+                                String mvnUri = MavenUrlHelper.MVN_PROTOCOL + groupId + "/" + artifactId + "/" + version;
+
                                 m.setLicenseType(license);
                                 m.setLicenseUrl(license_url);
                                 m.setDescription(description);
@@ -216,7 +214,7 @@ public class RemoteModulesHelper {
                                 }
                                 setContext(m, contextMap);
 
-                                cache.put(m.getMavenUrl(), m);
+                                cache.put(m.getMavenUri(), m);
                             }
                             if (monitor.isCanceled()) {
                                 recheckCache = true;

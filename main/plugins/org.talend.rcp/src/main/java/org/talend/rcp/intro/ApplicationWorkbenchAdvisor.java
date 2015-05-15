@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.TrayDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
@@ -40,6 +39,7 @@ import org.talend.core.ui.branding.IBrandingConfiguration;
 import org.talend.core.ui.branding.IBrandingService;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.runprocess.RunProcessPlugin;
+import org.talend.login.ILoginTask;
 import org.talend.rcp.TalendSplashHandler;
 import org.talend.registration.register.RegisterManagement;
 import org.talend.repository.RepositoryWorkUnit;
@@ -110,14 +110,14 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
         // get all login task to execut at the end but is needed here for monitor count
         LoginTaskRegistryReader loginTaskRegistryReader = new LoginTaskRegistryReader();
-        IRunnableWithProgress[] allLoginTasks = loginTaskRegistryReader.getAllTaskListInstance();
+        ILoginTask[] allLoginTasks = loginTaskRegistryReader.getAllTaskListInstance();
         IProgressMonitor monitor = TalendSplashHandler.instance != null ? TalendSplashHandler.instance.getBundleProgressMonitor()
                 : new NullProgressMonitor();
 
         SubMonitor subMonitor = SubMonitor.convert(monitor, allLoginTasks.length + 1);
 
         // handle the login tasks created using the extension point org.talend.core.repository.login.task
-        for (IRunnableWithProgress toBeRun : allLoginTasks) {
+        for (ILoginTask toBeRun : allLoginTasks) {
             try {
                 toBeRun.run(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
             } catch (Exception e) {
