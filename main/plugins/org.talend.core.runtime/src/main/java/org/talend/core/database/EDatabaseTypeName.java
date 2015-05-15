@@ -12,6 +12,10 @@
 // ============================================================================
 package org.talend.core.database;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.talend.core.model.metadata.builder.database.EDatabaseSchemaOrCatalogMapping;
 
 /**
@@ -147,6 +151,15 @@ public enum EDatabaseTypeName {
         return this.schemaMappingField;
     }
 
+    /**
+     * Getter for dbType.
+     * 
+     * @return the dbType
+     */
+    public String getDbType() {
+        return this.dbType;
+    }
+
     public String getDisplayName() {
         return this.displayName;
     }
@@ -230,9 +243,21 @@ public enum EDatabaseTypeName {
         if (displayName == null) {
             return MYSQL;
         }
-        for (EDatabaseTypeName typename : EDatabaseTypeName.values()) {
-            if (typename.getDisplayName().toLowerCase().equals(displayName.toLowerCase())) {
-                return typename;
+
+        String[] partDbTypeArr = { "Oracle with SID", "Oracle with service name", "Oracle OCI", "Oracle Custom", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                "Sybase (ASE and IQ)", "Microsoft SQL Server", "Microsoft SQL Server 2005/2008" }; //$NON-NLS-1$ //$NON-NLS-2$//$NON-NLS-3$
+        Set<String> partDbTypeSet = new HashSet<String>(Arrays.asList(partDbTypeArr));
+        if (partDbTypeSet.contains(displayName)) {
+            for (EDatabaseTypeName typename : EDatabaseTypeName.values()) {
+                if (typename.getDisplayName().toLowerCase().equals(displayName.toLowerCase())) {
+                    return typename;
+                }
+            }
+        } else {
+            for (EDatabaseTypeName typename : EDatabaseTypeName.values()) {
+                if (typename.getDbType().toLowerCase().equals(displayName.toLowerCase())) {
+                    return typename;
+                }
             }
         }
         return MYSQL;
