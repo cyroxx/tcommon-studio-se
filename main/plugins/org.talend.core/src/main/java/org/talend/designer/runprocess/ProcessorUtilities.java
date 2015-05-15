@@ -434,7 +434,7 @@ public class ProcessorUtilities {
         }
         resetRunJobComponentParameterForContextApply(jobInfo, currentProcess, selectedContextName);
 
-        generateNodeInfo(jobInfo, selectedContextName, statistics, needContext, option, progressMonitor, currentProcess);
+        generateNodeInfo(jobInfo, selectedContextName, statistics, needContext, false, option, progressMonitor, currentProcess);
 
         IProcessor processor = null;
         if (processor2 != null) {
@@ -637,7 +637,7 @@ public class ProcessorUtilities {
     }
 
     private static IProcessor generateCode(JobInfo jobInfo, String selectedContextName, boolean statistics, boolean trace,
-            boolean needContext, int option, IProgressMonitor progressMonitor) throws ProcessorException {
+            boolean needContext, boolean withTests, int option, IProgressMonitor progressMonitor) throws ProcessorException {
         needContextInCurrentGeneration = needContext;
         TimeMeasure.display = CommonsPlugin.isDebugMode();
         TimeMeasure.displaySteps = CommonsPlugin.isDebugMode();
@@ -748,7 +748,8 @@ public class ProcessorUtilities {
             }
             resetRunJobComponentParameterForContextApply(jobInfo, currentProcess, selectedContextName);
 
-            generateNodeInfo(jobInfo, selectedContextName, statistics, needContext, option, progressMonitor, currentProcess);
+            generateNodeInfo(jobInfo, selectedContextName, statistics, needContext, withTests, option, progressMonitor,
+                    currentProcess);
             TimeMeasure.step(idTimer, "generateNodeInfo");
 
             IProcessor processor = null;
@@ -776,6 +777,15 @@ public class ProcessorUtilities {
             jobInfo.setProcess(null);
             generateBuildInfo(jobInfo, progressMonitor, isMainJob, currentProcess, currentJobName, processor);
             TimeMeasure.step(idTimer, "generateBuildInfo");
+
+            if (withTests) {
+                List<ProcessItem> testsItems = selectedProcessItem.get;
+                for (ProcessItem testItem : testsItems) {
+                    ProcessorUtilities.generateCode(testItem, testItem.getProcess().getDefaultContext(), false, false, false,
+                            progressMonitor);
+                }
+            }
+
             return processor;
         } finally {
             TimeMeasure.end(idTimer);
@@ -816,7 +826,7 @@ public class ProcessorUtilities {
     }
 
     private static void generateNodeInfo(JobInfo jobInfo, String selectedContextName, boolean statistics, boolean properties,
-            int option, IProgressMonitor progressMonitor, IProcess currentProcess) throws ProcessorException {
+            boolean withTests, int option, IProgressMonitor progressMonitor, IProcess currentProcess) throws ProcessorException {
         if (option != GENERATE_MAIN_ONLY) {
             // handle subjob in joblet. see bug 004937: tRunJob in a Joblet
             List<? extends INode> graphicalNodes = currentProcess.getGeneratingNodes();
@@ -872,10 +882,10 @@ public class ProcessorUtilities {
                             if (!jobList.contains(subJobInfo)) {
                                 // children won't have stats / traces
                                 if (option == GENERATE_WITH_FIRST_CHILD) {
-                                    generateCode(subJobInfo, selectedContextName, statistics, false, properties,
+                                    generateCode(subJobInfo, selectedContextName, statistics, false, properties, withTests,
                                             GENERATE_MAIN_ONLY, progressMonitor);
                                 } else {
-                                    generateCode(subJobInfo, selectedContextName, statistics, false, properties,
+                                    generateCode(subJobInfo, selectedContextName, statistics, false, properties, withTests,
                                             GENERATE_ALL_CHILDS, progressMonitor);
                                     currentProcess.setNeedRegenerateCode(true);
                                 }
@@ -985,7 +995,7 @@ public class ProcessorUtilities {
         }
         jobList.clear();
         JobInfo jobInfo = new JobInfo(processName, contextName, version);
-        IProcessor process = generateCode(jobInfo, contextName, statistics, trace, true, GENERATE_ALL_CHILDS, monitor);
+        IProcessor process = generateCode(jobInfo, contextName, statistics, trace, true, false, GENERATE_ALL_CHILDS, monitor);
         jobList.clear();
         return process;
     }
@@ -1007,7 +1017,7 @@ public class ProcessorUtilities {
         JobInfo jobInfo = new JobInfo(processId, contextName, version);
         jobInfo.setApplyContextToChildren(applyContextToChildren);
         jobList.clear();
-        IProcessor process = generateCode(jobInfo, contextName, statistics, trace, true, GENERATE_ALL_CHILDS, monitor);
+        IProcessor process = generateCode(jobInfo, contextName, statistics, trace, true, false, GENERATE_ALL_CHILDS, monitor);
         jobList.clear();
         return process;
     }
@@ -1021,13 +1031,20 @@ public class ProcessorUtilities {
         JobInfo jobInfo = new JobInfo(process, contextName);
         jobInfo.setApplyContextToChildren(applyContextToChildren);
         jobList.clear();
-        IProcessor result = generateCode(jobInfo, contextName, statistics, trace, true, GENERATE_ALL_CHILDS, monitor);
+        IProcessor result = generateCode(jobInfo, contextName, statistics, trace, true, false, GENERATE_ALL_CHILDS, monitor);
         jobList.clear();
         return result;
     }
 
     public static IProcessor generateCode(ProcessItem process, String contextName, String version, boolean statistics,
             boolean trace, boolean applyContextToChildren, boolean needContext, IProgressMonitor... monitors)
+            throws ProcessorException {
+        return generateCode(process, contextName, version, statistics, trace, applyContextToChildren, needContext, false,
+                monitors);
+    }
+
+    public static IProcessor generateCode(ProcessItem process, String contextName, String version, boolean statistics,
+            boolean trace, boolean applyContextToChildren, boolean needContext, boolean withTests, IProgressMonitor... monitors)
             throws ProcessorException {
         IProgressMonitor monitor = null;
         if (monitors == null) {
@@ -1038,7 +1055,8 @@ public class ProcessorUtilities {
         JobInfo jobInfo = new JobInfo(process, contextName, version);
         jobInfo.setApplyContextToChildren(applyContextToChildren);
         jobList.clear();
-        IProcessor result = generateCode(jobInfo, contextName, statistics, trace, needContext, GENERATE_ALL_CHILDS, monitor);
+        IProcessor result = generateCode(jobInfo, contextName, statistics, trace, needContext, withTests, GENERATE_ALL_CHILDS,
+                monitor);
         jobList.clear();
         return result;
     }
@@ -1058,7 +1076,7 @@ public class ProcessorUtilities {
             jobInfo.setContext(context);
             jobInfo.setApplyContextToChildren(applyContextToChildren);
             jobList.clear();
-            result = generateCode(jobInfo, contextName, statistics, trace, true, GENERATE_ALL_CHILDS, monitor);
+            result = generateCode(jobInfo, contextName, statistics, trace, true, false, GENERATE_ALL_CHILDS, monitor);
             jobList.clear();
         }
         return result;
@@ -1098,8 +1116,8 @@ public class ProcessorUtilities {
         }
         jobInfo.setApplyContextToChildren(applyToChildren);
         jobList.clear();
-        IProcessor genCode = generateCode(jobInfo, context.getName(), statistics, trace, contextProperties, GENERATE_ALL_CHILDS,
-                new NullProgressMonitor());
+        IProcessor genCode = generateCode(jobInfo, context.getName(), statistics, trace, contextProperties, false,
+                GENERATE_ALL_CHILDS, new NullProgressMonitor());
         jobList.clear();
         return genCode;
     }
@@ -1138,7 +1156,7 @@ public class ProcessorUtilities {
             jobInfo = new JobInfo(process, context);
         }
         jobList.clear();
-        IProcessor genCode = generateCode(jobInfo, context.getName(), statistics, trace, properties, GENERATE_ALL_CHILDS,
+        IProcessor genCode = generateCode(jobInfo, context.getName(), statistics, trace, properties, false, GENERATE_ALL_CHILDS,
                 progressMonitor);
         jobList.clear();
         return genCode;
@@ -1192,7 +1210,7 @@ public class ProcessorUtilities {
         // achen modify to fix 0006107
         JobInfo jobInfo = new JobInfo(process, context);
         jobList.clear();
-        IProcessor genCode = generateCode(jobInfo, context.getName(), statistics, trace, properties, option,
+        IProcessor genCode = generateCode(jobInfo, context.getName(), statistics, trace, properties, false, option,
                 new NullProgressMonitor());
         jobList.clear();
         return genCode;
@@ -1202,6 +1220,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(boolean externalUse, String processName, String contextName, int statisticPort,
             int tracePort, String... codeOptions) throws ProcessorException {
         return getCommandLine(null, externalUse, processName, contextName, statisticPort, tracePort, codeOptions);
@@ -1211,6 +1230,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(boolean externalUse, String processName, String contextName, String version,
             int statisticPort, int tracePort, String... codeOptions) throws ProcessorException {
         return getCommandLine(null, externalUse, processName, contextName, version, statisticPort, tracePort, codeOptions);
@@ -1220,6 +1240,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(String targetPlatform, boolean externalUse, String processId, String contextName,
             int statisticPort, int tracePort, String... codeOptions) throws ProcessorException {
         ProcessItem selectedProcessItem = ItemCacheManager.getProcessItem(processId);
@@ -1231,6 +1252,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(String targetPlatform, boolean externalUse, String processId, String contextName,
             String version, int statisticPort, int tracePort, String... codeOptions) throws ProcessorException {
         ProcessItem selectedProcessItem = ItemCacheManager.getProcessItem(processId, version);
@@ -1242,6 +1264,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(String targetPlatform, boolean externalUse, ProcessItem processItem,
             String contextName, boolean needContext, int statisticPort, int tracePort, String... codeOptions)
             throws ProcessorException {
@@ -1261,6 +1284,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(String targetPlatform, boolean externalUse, IProcess currentProcess,
             String contextName, boolean needContext, int statisticPort, int tracePort, String... codeOptions)
             throws ProcessorException {
@@ -1276,6 +1300,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(String targetPlatform, boolean externalUse, IProcess currentProcess, Property property,
             String contextName, boolean needContext, int statisticPort, int tracePort, String... codeOptions)
             throws ProcessorException {
