@@ -75,14 +75,6 @@ public interface IProcessor {
     public void generateContextCode() throws ProcessorException;
 
     /**
-     * 
-     * Only generate dataset code for testContainer
-     * 
-     * @throws ProcessorException
-     */
-    public void generateDataSetCode() throws ProcessorException;
-
-    /**
      * ADDED for TESB-7887 By GangLiu Only generate spring content, not main code.
      * 
      * @throws ProcessorException
@@ -163,6 +155,13 @@ public interface IProcessor {
      * @return the contextPath
      */
     public IPath getContextPath();
+
+    /**
+     * Getter for dataSetPath.
+     * 
+     * @return the dataSetPath
+     */
+    public IPath getDataSetPath();
 
     /**
      * getter the code project.

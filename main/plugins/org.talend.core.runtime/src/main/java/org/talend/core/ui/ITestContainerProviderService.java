@@ -52,5 +52,5 @@ public interface ITestContainerProviderService extends IService {
 
     public List<ProcessItem> getAllTestContainers(ProcessItem item);
 
-    public void copyDataSetFiles(IProcess process);
+    public void copyDataSetFiles(IProcess process, IPath srcPath);
 }

@@ -72,6 +72,7 @@ import org.talend.core.prefs.ITalendCorePrefConstants;
 import org.talend.core.runtime.process.ITalendProcessJavaProject;
 import org.talend.core.services.ISVNProviderService;
 import org.talend.core.ui.IJobletProviderService;
+import org.talend.core.ui.ITestContainerProviderService;
 import org.talend.designer.core.IDesignerCoreService;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
 import org.talend.designer.core.model.utils.emf.talendfile.ElementParameterType;
@@ -453,6 +454,9 @@ public class ProcessorUtilities {
         generateContextInfo(jobInfo, selectedContextName, statistics, trace, needContext, progressMonitor, currentProcess,
                 currentJobName, processor);
 
+        // for testContainer dataSet
+        generateDataSet(currentProcess, processor);
+
         // ADDED for TESB-7887 By GangLiu
         generateSpringInfo(jobInfo, selectedContextName, statistics, trace, needContext, progressMonitor, currentProcess,
                 currentJobName, processor);
@@ -636,6 +640,19 @@ public class ProcessorUtilities {
         }
     }
 
+    private static void generateDataSet(IProcess process, IProcessor processor) {
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
+            ITestContainerProviderService testContainerService = (ITestContainerProviderService) GlobalServiceRegister
+                    .getDefault().getService(ITestContainerProviderService.class);
+            if (testContainerService != null) {
+                if (!testContainerService.isTestContainerProcess(process)) {
+                    return;
+                }
+                testContainerService.copyDataSetFiles(process, processor.getDataSetPath());
+            }
+        }
+    }
+
     private static IProcessor generateCode(JobInfo jobInfo, String selectedContextName, boolean statistics, boolean trace,
             boolean needContext, int option, IProgressMonitor progressMonitor) throws ProcessorException {
         needContextInCurrentGeneration = needContext;
@@ -760,6 +777,9 @@ public class ProcessorUtilities {
 
             generateContextInfo(jobInfo, selectedContextName, statistics, trace, needContext, progressMonitor, currentProcess,
                     currentJobName, processor);
+
+            // for testContainer dataSet
+            generateDataSet(currentProcess, processor);
 
             // ADDED for TESB-7887 By GangLiu
             generateSpringInfo(jobInfo, selectedContextName, statistics, trace, needContext, progressMonitor, currentProcess,
@@ -1202,6 +1222,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(boolean externalUse, String processName, String contextName, int statisticPort,
             int tracePort, String... codeOptions) throws ProcessorException {
         return getCommandLine(null, externalUse, processName, contextName, statisticPort, tracePort, codeOptions);
@@ -1211,6 +1232,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(boolean externalUse, String processName, String contextName, String version,
             int statisticPort, int tracePort, String... codeOptions) throws ProcessorException {
         return getCommandLine(null, externalUse, processName, contextName, version, statisticPort, tracePort, codeOptions);
@@ -1220,6 +1242,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(String targetPlatform, boolean externalUse, String processId, String contextName,
             int statisticPort, int tracePort, String... codeOptions) throws ProcessorException {
         ProcessItem selectedProcessItem = ItemCacheManager.getProcessItem(processId);
@@ -1231,6 +1254,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(String targetPlatform, boolean externalUse, String processId, String contextName,
             String version, int statisticPort, int tracePort, String... codeOptions) throws ProcessorException {
         ProcessItem selectedProcessItem = ItemCacheManager.getProcessItem(processId, version);
@@ -1242,6 +1266,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(String targetPlatform, boolean externalUse, ProcessItem processItem,
             String contextName, boolean needContext, int statisticPort, int tracePort, String... codeOptions)
             throws ProcessorException {
@@ -1261,6 +1286,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(String targetPlatform, boolean externalUse, IProcess currentProcess,
             String contextName, boolean needContext, int statisticPort, int tracePort, String... codeOptions)
             throws ProcessorException {
@@ -1276,6 +1302,7 @@ public class ProcessorUtilities {
      * 
      * @deprecated seems never use this one
      */
+    @Deprecated
     public static String[] getCommandLine(String targetPlatform, boolean externalUse, IProcess currentProcess, Property property,
             String contextName, boolean needContext, int statisticPort, int tracePort, String... codeOptions)
             throws ProcessorException {
