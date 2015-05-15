@@ -669,6 +669,17 @@ public final class ProcessUtils {
         return false;
     }
 
+    public static String getTestDataValue(IProcess process, IContext context, IContextParameter para) {
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
+            ITestContainerProviderService testContainerService = (ITestContainerProviderService) GlobalServiceRegister
+                    .getDefault().getService(ITestContainerProviderService.class);
+            if (testContainerService != null) {
+                return testContainerService.getTestDataValue(process, context, para);
+            }
+        }
+        return null;
+    }
+
     public static Item getTestContainerBaseItem(Item item) {
         Item baseItem = null;
         if (GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
