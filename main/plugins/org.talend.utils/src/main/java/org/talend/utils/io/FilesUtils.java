@@ -57,7 +57,7 @@ public final class FilesUtils {
         if (name != null) {
             String checkedName = name.toLowerCase();
             for (String element : SVN_FOLDER_NAMES) {
-                if (element.equals(checkedName) || checkedName.endsWith(element)) {
+                if (element.equals(checkedName)) {
                     return true;
                 }
             }
@@ -99,6 +99,7 @@ public final class FilesUtils {
 
         FileFilter folderFilter = new FileFilter() {
 
+            @Override
             public boolean accept(File pathname) {
                 return pathname.isDirectory() && (sourceFolderFilter == null || sourceFolderFilter.accept(pathname));
             }
@@ -106,6 +107,7 @@ public final class FilesUtils {
         };
         FileFilter fileFilter = new FileFilter() {
 
+            @Override
             public boolean accept(File pathname) {
                 return !pathname.isDirectory() && (sourceFileFilter == null || sourceFileFilter.accept(pathname));
             }
@@ -226,6 +228,7 @@ public final class FilesUtils {
     public static FileFilter getExcludeSystemFilesFilter() {
         FileFilter filter = new FileFilter() {
 
+            @Override
             public boolean accept(File pathname) {
                 return !isSVNFolder(pathname);
             }
@@ -237,6 +240,7 @@ public final class FilesUtils {
     public static FileFilter getAcceptJARFilesFilter() {
         FileFilter filter = new FileFilter() {
 
+            @Override
             public boolean accept(File pathname) {
                 return pathname.toString().endsWith(".jar");
             }
@@ -248,6 +252,7 @@ public final class FilesUtils {
     public static FileFilter getAcceptPMFilesFilter() {
         FileFilter filter = new FileFilter() {
 
+            @Override
             public boolean accept(File pathname) {
                 return pathname.toString().endsWith(".pm");
             }
