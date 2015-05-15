@@ -24,6 +24,8 @@ public interface IBuildJobHandler {
     public void generateJobFiles(ProcessItem process, String contextName, String version, IProgressMonitor monitor)
             throws Exception;
 
+    public void generateTestReports(ProcessItem processItem, IProgressMonitor monitor) throws Exception;
+
     public void generateItemFiles(ProcessItem processItem, boolean withDependencies, IProgressMonitor monitor) throws Exception;
 
     public void build() throws Exception;

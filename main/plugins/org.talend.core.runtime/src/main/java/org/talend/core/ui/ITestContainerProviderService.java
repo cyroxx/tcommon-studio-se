@@ -12,12 +12,16 @@
 // ============================================================================
 package org.talend.core.ui;
 
+import java.util.List;
+
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.core.IService;
 import org.talend.core.model.process.INode;
 import org.talend.core.model.process.IProcess;
 import org.talend.core.model.properties.Item;
+import org.talend.core.model.properties.ProcessItem;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.designer.core.model.utils.emf.talendfile.ProcessType;
 
@@ -46,4 +50,11 @@ public interface ITestContainerProviderService extends IService {
     public void updateDetect(final IProcess curJobProcess, final boolean updateAllJobs);
 
     public void reloadJunitsNodes(INode nc);
+
+    public List<ProcessItem> getAllTestContainers(ProcessItem item);
+
+    public void copyDataSetFiles(IProcess process);
+
+    public List<IFile> getTestReportFiles(ProcessItem testItem);
+
 }
