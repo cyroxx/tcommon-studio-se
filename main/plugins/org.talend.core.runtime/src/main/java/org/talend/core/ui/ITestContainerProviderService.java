@@ -14,6 +14,7 @@ package org.talend.core.ui;
 
 import java.util.List;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IPath;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.core.IService;
@@ -51,6 +52,8 @@ public interface ITestContainerProviderService extends IService {
     public void updateDetect(final IProcess curJobProcess, final boolean updateAllJobs);
 
     public void reloadJunitsNodes(INode nc);
+
+    public IFolder getProcessFolder(String originalJobID);
 
     public List<ProcessItem> getAllTestContainers(ProcessItem item);
 
