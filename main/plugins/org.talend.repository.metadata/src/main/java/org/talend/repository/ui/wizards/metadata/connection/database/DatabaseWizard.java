@@ -92,7 +92,6 @@ import org.talend.utils.json.JSONException;
 import org.talend.utils.json.JSONObject;
 import org.talend.utils.sql.ConnectionUtils;
 import org.talend.utils.sugars.ReturnCode;
-
 import orgomg.cwm.objectmodel.core.ModelElement;
 import orgomg.cwm.objectmodel.core.Package;
 import orgomg.cwm.resource.relational.Catalog;
@@ -432,6 +431,10 @@ public class DatabaseWizard extends CheckLastVersionRepositoryWizard implements 
                         dbConnection.setDbVersionString(dbConnection.getParameters().get(
                                 ConnParameterKeys.CONN_PARA_KEY_IMPALA_VERSION));
                     }
+                }
+                if (EDatabaseTypeName.MYSQL.equals(dbType)
+                        && (EDatabaseVersion4Drivers.MARIADB.getVersionValue().equals(connection.getDbVersionString()))) {
+                    driverClass = EDatabase4DriverClassName.MARIADB.getDriverClass();
                 }
                 dbConnection.setDriverClass(driverClass);
             }
