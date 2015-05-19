@@ -385,23 +385,35 @@ public class PomUtil {
     }
 
     public static String getArtifactPath(MavenArtifact artifact) {
+        IMaven maven = MavenPlugin.getMaven();
+        String artifactPath = null;
+        try {
+            artifactPath = maven.getArtifactPath(maven.getLocalRepository(), artifact.getGroupId(), artifact.getArtifactId(),
+                    artifact.getVersion(), artifact.getType(), artifact.getClassifier());
+        } catch (CoreException e) {
+            ExceptionHandler.process(e);
+        }
+        return artifactPath;
+    }
+
+    public static String getAbsArtifactPath(MavenArtifact artifact) {
         if (artifact == null) {
             return null;
         }
         IMaven maven = MavenPlugin.getMaven();
-        try {
-            String artifactPath = maven.getArtifactPath(maven.getLocalRepository(), artifact.getGroupId(),
-                    artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), artifact.getClassifier());
-            if (artifactPath == null) {
-                return null;
-            }
-            File file = new File(artifactPath);
-            if (file.exists()) {
-                return artifactPath;
-            }
-        } catch (CoreException e) {
-            ExceptionHandler.process(e);
+        String artifactPath = getArtifactPath(artifact);
+        if (artifactPath == null) {
+            return null;
         }
+        String localRepositoryPath = maven.getLocalRepositoryPath();
+        if (!localRepositoryPath.endsWith("/") && !localRepositoryPath.endsWith("\\")) {
+            localRepositoryPath = localRepositoryPath + "/";
+        }
+        File file = new File(localRepositoryPath + artifactPath);
+        if (file.exists()) {
+            return artifactPath;
+        }
+
         return null;
     }
 

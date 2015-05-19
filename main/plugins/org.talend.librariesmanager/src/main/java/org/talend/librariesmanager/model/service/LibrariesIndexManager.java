@@ -73,7 +73,7 @@ public class LibrariesIndexManager {
             if (!new File(getMavenIndexPath()).exists()) {
                 mavenLibIndex = LibrariesindexFactory.eINSTANCE.createLibrariesIndex();
             } else {
-                Resource resource = createLibrariesIndexResource(getIndexFileInstallFolder(), LIBRARIES_INDEX);
+                Resource resource = createLibrariesIndexResource(getIndexFileInstallFolder(), MAVEN_INDEX);
                 Map optionMap = new HashMap();
                 optionMap.put(XMLResource.OPTION_DEFER_ATTACHMENT, Boolean.TRUE);
                 optionMap.put(XMLResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
@@ -152,6 +152,14 @@ public class LibrariesIndexManager {
      */
     public LibrariesIndex getMavenLibIndex() {
         return this.mavenLibIndex;
+    }
+
+    public String getMvnUriFromIndex(String jarName) {
+        if (mavenLibIndex != null) {
+            return this.mavenLibIndex.getJarsToRelativePath().get(jarName);
+        }
+
+        return null;
     }
 
 }

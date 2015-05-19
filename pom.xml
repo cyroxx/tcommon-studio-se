@@ -99,6 +99,7 @@
 		<module>main/plugins/org.talend.libraries.apache.google</module>
 		<module>main/plugins/org.talend.libraries.apache.hive</module>
 		<module>main/plugins/org.talend.libraries.apache.http</module>
+		<module>main/plugins/org.talend.libraries.apache.http.jars</module>
 		<module>main/plugins/org.talend.libraries.apache.lucene</module>
 		<module>main/plugins/org.talend.libraries.apache.xml</module>
 		<module>main/plugins/org.talend.libraries.csv</module>

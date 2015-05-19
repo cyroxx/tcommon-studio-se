@@ -11,8 +11,8 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
-
-import org.talend.librariesmanager.emf.librariesindex.*;
+import org.talend.librariesmanager.emf.librariesindex.LibrariesIndex;
+import org.talend.librariesmanager.emf.librariesindex.LibrariesindexPackage;
 
 /**
  * <!-- begin-user-doc -->

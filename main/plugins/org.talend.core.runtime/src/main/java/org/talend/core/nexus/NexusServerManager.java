@@ -28,7 +28,7 @@ import org.talend.utils.json.JSONObject;
  * created by wchen on 2015-5-12 Detailled comment
  *
  */
-public class NexusServerUtil {
+public class NexusServerManager {
 
     private static final String KEY_NEXUS_RUL = "nexusUrl";//$NON-NLS-1$ 
 

@@ -11,12 +11,11 @@ import java.util.Map;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-
 import org.eclipse.emf.ecore.impl.EFactoryImpl;
-
 import org.eclipse.emf.ecore.plugin.EcorePlugin;
-
-import org.talend.librariesmanager.emf.librariesindex.*;
+import org.talend.librariesmanager.emf.librariesindex.LibrariesIndex;
+import org.talend.librariesmanager.emf.librariesindex.LibrariesindexFactory;
+import org.talend.librariesmanager.emf.librariesindex.LibrariesindexPackage;
 
 /**
  * <!-- begin-user-doc -->

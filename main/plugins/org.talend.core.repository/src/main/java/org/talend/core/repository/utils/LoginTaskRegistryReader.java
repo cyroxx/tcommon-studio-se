@@ -93,6 +93,17 @@ public class LoginTaskRegistryReader extends RegistryReader {
         return getAllRunnables(allLoginTasks);
     }
 
+    public ILoginTask[] getAllCommandlineTaskListInstance() {
+        List<LoginTask> commandlineTask = new ArrayList<LoginTask>();
+        ILoginTask[] allTask = getAllTaskListInstance();
+        for (ILoginTask task : allTask) {
+            if (task.isCommandlineTask()) {
+                commandlineTask.add((LoginTask) task);
+            }
+        }
+        return getAllRunnables(commandlineTask);
+    }
+
     /**
      * DOC sgandon Comment method "getAllRunnables".
      * 

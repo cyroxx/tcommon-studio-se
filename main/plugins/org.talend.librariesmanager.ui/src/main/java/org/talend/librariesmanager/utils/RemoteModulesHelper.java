@@ -58,8 +58,11 @@ import org.talend.commons.utils.network.NetworkUtil;
 import org.talend.core.model.general.ModuleNeeded;
 import org.talend.core.model.general.ModuleToInstall;
 import org.talend.core.nexus.MavenResolverCreator;
+import org.talend.core.nexus.NexusServerBean;
+import org.talend.core.nexus.NexusServerManager;
 import org.talend.core.runtime.maven.MavenConstants;
 import org.talend.core.runtime.maven.MavenUrlHelper;
+import org.talend.librariesmanager.model.service.LibrariesIndexManager;
 import org.talend.librariesmanager.ui.dialogs.IModulesListener;
 import org.talend.librariesmanager.ui.i18n.Messages;
 import org.talend.utils.io.FilesUtils;
@@ -74,8 +77,10 @@ import us.monoid.json.JSONObject;
  */
 public class RemoteModulesHelper {
 
+    private static final String SLASH = "/";//$NON-NLS-1$ 
+
     // TODO to be removed after nexus server available
-    public static final boolean nexus_available = false;
+    public static final boolean nexus_available = true;
 
     // true if user was warned the network connection is not possible
     static private boolean alreadyWarnedAboutConnectionIssue = false;
@@ -231,7 +236,7 @@ public class RemoteModulesHelper {
 
                 for (String name : jars) {
                     String artifact2Check = name;
-                    String key = getDefaulMavenUrl(artifact2Check);
+                    String key = getMavenUri(artifact2Check);
                     ModuleToInstall moduleToInstall = cache.get(key);
                     if (moduleToInstall != null) {
                         toInstall.add(moduleToInstall);
@@ -356,13 +361,17 @@ public class RemoteModulesHelper {
         }
     }
 
-    private String getDefaulMavenUrl(String jarOrUrl) {
+    private String getMavenUri(String jarOrUrl) {
         if (jarOrUrl != null) {
             if (MavenUrlHelper.isMvnUrl(jarOrUrl)) {
                 return jarOrUrl;
             } else {
-                ExceptionHandler.log("Warning : the groupid and version in the url may not be correct");
-                return MavenUrlHelper.generateMvnUrlForJarName(jarOrUrl);
+                String mvnUriFromIndex = LibrariesIndexManager.getInstance().getMvnUriFromIndex(jarOrUrl);
+                if (mvnUriFromIndex == null) {
+                    ExceptionHandler.log("Warning : the groupid and version in the url may not be correct");
+                    mvnUriFromIndex = MavenUrlHelper.generateMvnUrlForJarName(jarOrUrl);
+                }
+                return mvnUriFromIndex;
             }
         } else {
             return null;
@@ -484,7 +493,8 @@ public class RemoteModulesHelper {
     private Map<String, ModuleToInstall> cache;
 
     private RemoteModulesHelper() {
-        mvnResolver = MavenResolverCreator.getInstance().getMavenResolver(null);
+        NexusServerBean nexusServer = NexusServerManager.getNexusServer(true);
+        mvnResolver = MavenResolverCreator.getInstance().getMavenResolver(nexusServer);
     }
 
     public synchronized static RemoteModulesHelper getInstance() {
@@ -820,5 +830,14 @@ public class RemoteModulesHelper {
             }
         }
         return null;
+    }
+
+    /**
+     * Getter for mvnResolver.
+     * 
+     * @return the mvnResolver
+     */
+    public MavenResolver getMvnResolver() {
+        return this.mvnResolver;
     }
 }

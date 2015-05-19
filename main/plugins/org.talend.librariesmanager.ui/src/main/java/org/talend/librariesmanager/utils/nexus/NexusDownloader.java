@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.talend.core.download.DownloadListener;
 import org.talend.core.download.IDownloadHelper;
-import org.talend.core.nexus.MavenResolverCreator;
+import org.talend.librariesmanager.utils.RemoteModulesHelper;
 
 /**
  * created by wchen on Apr 24, 2015 Detailled comment
@@ -42,7 +42,7 @@ public class NexusDownloader implements IDownloadHelper {
     @Override
     public void download(URL url, File destination) throws IOException {
         fireDownloadStart(100);
-        MavenResolverCreator.getInstance().getMavenResolver(null).resolve(url.toExternalForm());
+        RemoteModulesHelper.getInstance().getMvnResolver().resolve(url.toExternalForm());
         fireDownloadComplete();
     }
 

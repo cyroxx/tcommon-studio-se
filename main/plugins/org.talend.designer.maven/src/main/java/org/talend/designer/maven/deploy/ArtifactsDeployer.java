@@ -15,7 +15,7 @@ package org.talend.designer.maven.deploy;
 import java.util.Map;
 
 import org.talend.core.nexus.NexusServerBean;
-import org.talend.core.nexus.NexusServerUtil;
+import org.talend.core.nexus.NexusServerManager;
 
 /**
  * created by wchen on 2015-5-14 Detailled comment
@@ -28,7 +28,7 @@ public class ArtifactsDeployer {
     private NexusServerBean nexusServer;
 
     private ArtifactsDeployer() {
-        nexusServer = NexusServerUtil.getNexusServer(true);
+        nexusServer = NexusServerManager.getNexusServer(true);
     }
 
     public static ArtifactsDeployer getInstance() {
