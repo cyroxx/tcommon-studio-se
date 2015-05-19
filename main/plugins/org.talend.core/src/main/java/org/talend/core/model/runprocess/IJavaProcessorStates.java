@@ -40,4 +40,11 @@ public interface IJavaProcessorStates {
      */
     public IPath getContextPath();
 
+    /**
+     * Return the context path.
+     * 
+     * DOC yzhang Comment method "getDataSetPath".
+     */
+    public IPath getDataSetPath();
+
 }
