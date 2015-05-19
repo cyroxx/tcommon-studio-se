@@ -157,6 +157,13 @@ public interface IProcessor {
     public IPath getContextPath();
 
     /**
+     * Getter for dataSetPath.
+     * 
+     * @return the dataSetPath
+     */
+    public IPath getDataSetPath();
+
+    /**
      * getter the code project.
      * 
      * @return

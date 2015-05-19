@@ -41,6 +41,8 @@ import org.talend.designer.core.model.utils.emf.talendfile.TalendFileFactory;
  */
 public class JobContextManager implements IContextManager {
 
+    public static final String dataSource = "testContainer_dataset";//$NON-NLS-1$
+
     private IContext defaultContext = new JobContext(IContext.DEFAULT);
 
     private List<IContext> listContext = new ArrayList<IContext>();
@@ -274,6 +276,8 @@ public class JobContextManager implements IContextManager {
                         Item item = ContextUtils.getRepositoryContextItemById(contextParam.getSource());
                         if (item != null) {
                             contextParamType.setRepositoryContextId(item.getProperty().getId());
+                        } else if (contextParam.getSource().equals(dataSource)) {
+                            contextParamType.setRepositoryContextId(dataSource);
                         }
                     }
                     contextTypeParamList.add(contextParamType);
@@ -349,6 +353,8 @@ public class JobContextManager implements IContextManager {
                     }
                     if (item != null) {
                         source = item.getProperty().getId();
+                    } else if (repositoryContextId.equals(JobContextManager.dataSource)) {
+                        source = JobContextManager.dataSource;
                     } else {
                         lostParameters.add(contextParam.getName());
                     }
