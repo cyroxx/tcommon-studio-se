@@ -55,6 +55,8 @@
 				<talendType type="id_List"/>
 			
 				<talendType type="id_Boolean">	
+				
+					<dbType type="BYTEINT" default="true"/>
 					
 				</talendType>
 				<talendType type="id_Byte">
