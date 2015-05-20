@@ -17,7 +17,7 @@ package org.talend.core.updatesite;
  */
 public interface IUpdateSiteBean {
 
-    public IPatchClassifier getClassifier();
+    public String getClassifier();
 
     public String getGroupID();
 
