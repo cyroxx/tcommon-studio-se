@@ -115,6 +115,8 @@ public class RepositoryViewObject implements IRepositoryViewObject {
 
     private static final String TIP = "same name item with other project";
 
+    private boolean avoidGuiInfos;
+
     public RepositoryViewObject(Property property, boolean avoidGuiInfos) {
         this.id = property.getId();
         this.author = property.getAuthor();
@@ -141,6 +143,7 @@ public class RepositoryViewObject implements IRepositoryViewObject {
             informationStatus = factory.getStatus(informationLevel);
             modified = factory.isModified(property);
         }
+        this.avoidGuiInfos = avoidGuiInfos;
         if (!avoidGuiInfos) {
             if (type == ERepositoryObjectType.JOBLET) {
                 JobletProcessItem item = (JobletProcessItem) property.getItem();
@@ -316,39 +319,41 @@ public class RepositoryViewObject implements IRepositoryViewObject {
             repositoryStatus = factory.getStatus(property.getItem());
             InformationLevel informationLevel = property.getMaxInformationLevel();
             informationStatus = factory.getStatus(informationLevel);
-            if (type == ERepositoryObjectType.JOBLET) {
-                JobletProcessItem item = (JobletProcessItem) property.getItem();
-                if (item.getIcon() != null && item.getIcon().getInnerContent() != null
-                        && item.getIcon().getInnerContent().length != 0) {
-                    customImage = getJobletCustomIcon(property);
-                    customImage = ImageUtils.propertyLabelScale(property.getId(), customImage, ICON_SIZE.ICON_16);
-                }
-                IComponentsService service = (IComponentsService) GlobalServiceRegister.getDefault().getService(
-                        IComponentsService.class);
-                IJobletProviderService jobletservice = (IJobletProviderService) GlobalServiceRegister.getDefault().getService(
-                        IJobletProviderService.class);
-                if (service != null && jobletservice != null) {
-                    IComponentsFactory factorySingleton = service.getComponentsFactory();
-                    IComponent component = factorySingleton.get(property.getLabel(), DI);
-                    if (component != null) {
-                        try {
-                            Property tProperty = jobletservice.getJobletComponentItem(component);
-                            if (!tProperty.getId().equals(this.id)) {
-                                informationStatus = ERepositoryStatus.WARN;
-                                property.setDescription(TIP);
+            if (!this.avoidGuiInfos) {
+                if (type == ERepositoryObjectType.JOBLET) {
+                    JobletProcessItem item = (JobletProcessItem) property.getItem();
+                    if (item.getIcon() != null && item.getIcon().getInnerContent() != null
+                            && item.getIcon().getInnerContent().length != 0) {
+                        customImage = getJobletCustomIcon(property);
+                        customImage = ImageUtils.propertyLabelScale(property.getId(), customImage, ICON_SIZE.ICON_16);
+                    }
+                    IComponentsService service = (IComponentsService) GlobalServiceRegister.getDefault().getService(
+                            IComponentsService.class);
+                    IJobletProviderService jobletservice = (IJobletProviderService) GlobalServiceRegister.getDefault()
+                            .getService(IJobletProviderService.class);
+                    if (service != null && jobletservice != null) {
+                        IComponentsFactory factorySingleton = service.getComponentsFactory();
+                        IComponent component = factorySingleton.get(property.getLabel(), DI);
+                        if (component != null) {
+                            try {
+                                Property tProperty = jobletservice.getJobletComponentItem(component);
+                                if (!tProperty.getId().equals(this.id)) {
+                                    informationStatus = ERepositoryStatus.WARN;
+                                    property.setDescription(TIP);
+                                }
+                            } catch (Exception e) {
+                                // tProperty is null
                             }
-                        } catch (Exception e) {
-                            // tProperty is null
                         }
                     }
-                }
-            } else if (type == ERepositoryObjectType.DOCUMENTATION) {
-                this.customImage = ImageProvider.getImage(RepositoryImageProvider.getIcon(type));
-                Item item = property.getItem();
-                if (item instanceof DocumentationItem) {
-                    customImage = coreSerivce.getImageWithDocExt(((DocumentationItem) item).getExtension());
-                } else if (item instanceof LinkDocumentationItem) {
-                    customImage = coreSerivce.getImageWithSpecial(customImage).createImage();
+                } else if (type == ERepositoryObjectType.DOCUMENTATION) {
+                    this.customImage = ImageProvider.getImage(RepositoryImageProvider.getIcon(type));
+                    Item item = property.getItem();
+                    if (item instanceof DocumentationItem) {
+                        customImage = coreSerivce.getImageWithDocExt(((DocumentationItem) item).getExtension());
+                    } else if (item instanceof LinkDocumentationItem) {
+                        customImage = coreSerivce.getImageWithSpecial(customImage).createImage();
+                    }
                 }
             }
             return property;
