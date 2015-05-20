@@ -110,7 +110,7 @@ public class JarLoaderBundleFileWrapperFactory implements BundleFileWrapperFacto
                         getMissingJars().add(path + '/');// we add slash because the wrapBundleFile, getEntry(""); line
                                                          // will
                                                          // call this method with path equals to path + '/'
-                        be = new FileBundleEntry(new File(generation.getBundleFile().getBaseFile(), path), path);
+                        be = new MissingJarBundleEntry(path);
                         MissingJarServices
                                 .logDebugInfo("fake FileBundleEntry created for :" + generation.getRevision().getSymbolicName() + "/" + path); //$NON-NLS-1$//$NON-NLS-2$
                     }

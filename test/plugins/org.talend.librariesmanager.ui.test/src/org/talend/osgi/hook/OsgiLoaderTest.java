@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
@@ -222,7 +224,8 @@ public class OsgiLoaderTest {
         try {
             // this should fail if the Activator fails to load the class from the fragment lib
             try {
-                bundle.start();
+                // this forces the bundle classloader to be initialised
+                bundleNoJar.getResource("foo"); //$NON-NLS-1$
                 callBundleMethodToCallLibApi(bundle);
                 fail("starting bundle should have thrown an exception."); //$NON-NLS-1$
             } catch (InvocationTargetException be) {
@@ -259,9 +262,10 @@ public class OsgiLoaderTest {
         Bundle bundle = osgiBundle.getBundleContext().installBundle(BUNDLE_CALLING_LIB_FOLDER_URL);
         try {
             try {
-                bundle.start();
+                // this forces the bundle classloader to be initialised
+                bundleNoJar.getResource("foo"); //$NON-NLS-1$
                 callBundleMethodToCallLibApi(bundle);
-                fail("Bundle start should have thrown an exception can no lib is provided"); //$NON-NLS-1$
+                fail("Bundle start should have thrown an exception cause no lib is provided"); //$NON-NLS-1$
             } catch (InvocationTargetException be) {
                 if (!(be.getCause() instanceof NoClassDefFoundError)) {
                     throw be;
@@ -295,15 +299,19 @@ public class OsgiLoaderTest {
                     JarMissingEvent jarMissingEvent = (JarMissingEvent) arg;
                     String jarName = jarMissingEvent.getJarName();
                     if (jarName.equals(EXISTING_JAR_NAME)) {
-                        File sourceFile = new File(
-                                "/Applications/java/talend/git/studio-full-master2/tcommon-studio-se/test/plugins/org.talend.librariesmanager.ui.test/resources/plugins/test.lib.fragment.with.existing.jar/lib/any-existing.jar");
-                        File desctinationFile = new File(libJavaFolderFile, jarName);
+
                         try {
-                            FileUtils.copyFile(sourceFile, desctinationFile);
-                        } catch (IOException e) {
-                            throw new RuntimeException("failed to copy jar", e); //$NON-NLS-1$
+                            File sourceFile = new File(new URI(FRAGMENT_WITH_LIB_FOLDER_URL + "lib/any-existing.jar")); //$NON-NLS-1$
+                            File desctinationFile = new File(libJavaFolderFile, jarName);
+                            try {
+                                FileUtils.copyFile(sourceFile, desctinationFile);
+                            } catch (IOException e) {
+                                throw new RuntimeException("failed to copy jar", e); //$NON-NLS-1$
+                            }
+                            observerCalled[0] = true;
+                        } catch (URISyntaxException e1) {
+                            throw new RuntimeException(e1);
                         }
-                        observerCalled[0] = true;
                     } else {
                         throw new RuntimeException("Missing jar observer did not receive the expected jar name:" + jarName + "!=" //$NON-NLS-1$
                                 + EXISTING_JAR_NAME);
@@ -317,7 +325,8 @@ public class OsgiLoaderTest {
         Bundle bundleNoJar = osgiBundle.getBundleContext().installBundle(BUNDLE_NO_LIB_FOLDER_URL);
         Bundle bundle = osgiBundle.getBundleContext().installBundle(BUNDLE_CALLING_LIB_FOLDER_URL);
         try {
-            bundle.start();
+            // this forces the bundle classloader to be initialised
+            bundleNoJar.getResource("foo"); //$NON-NLS-1$
             callBundleMethodToCallLibApi(bundle);
             assertTrue(observerCalled[0]);
 
@@ -346,15 +355,19 @@ public class OsgiLoaderTest {
                     JarMissingEvent jarMissingEvent = (JarMissingEvent) arg;
                     String jarName = jarMissingEvent.getJarName();
                     if (jarName.equals(EXISTING_JAR_NAME)) {
-                        File sourceFile = new File(
-                                "/Applications/java/talend/git/studio-full-master2/tcommon-studio-se/test/plugins/org.talend.librariesmanager.ui.test/resources/plugins/test.lib.fragment.with.existing.jar/lib/any-existing.jar");
-                        File desctinationFile = new File(libJavaFolderFile, jarName);
                         try {
-                            FileUtils.copyFile(sourceFile, desctinationFile);
-                        } catch (IOException e) {
-                            throw new RuntimeException("failed to copy jar", e); //$NON-NLS-1$
+                            File sourceFile = new File(new URI(FRAGMENT_WITH_LIB_FOLDER_URL + "lib/any-existing.jar")); //$NON-NLS-1$
+                            File desctinationFile = new File(libJavaFolderFile, jarName);
+                            try {
+                                FileUtils.copyFile(sourceFile, desctinationFile);
+                            } catch (IOException e) {
+                                throw new RuntimeException("failed to copy jar", e); //$NON-NLS-1$
+                            }
+                            observerCalled[0] = true;
+                        } catch (URISyntaxException e1) {
+                            throw new RuntimeException(e1);
                         }
-                        observerCalled[0] = true;
+
                     } else {
                         throw new RuntimeException("Missing jar observer did not receive the expected jar name:" + jarName + "!=" //$NON-NLS-1$
                                 + EXISTING_JAR_NAME);
@@ -367,8 +380,8 @@ public class OsgiLoaderTest {
         Bundle bundleNoJar = osgiBundle.getBundleContext().installBundle(BUNDLE_NO_LIB_FOLDER_URL);
         Bundle bundle = osgiBundle.getBundleContext().installBundle(BUNDLE_CALLING_LIB_FOLDER_URL);
         try {
-            // start the bundle to initiate a hook to be called
-            bundle.start();
+            // this forces the bundle classloader to be initialised
+            bundleNoJar.getResource("foo"); //$NON-NLS-1$
             URL jarURL = FileLocator.find(bundle, new Path("lib/any-existing.jar"), null); //$NON-NLS-1$
             checkFileExistsOrNot(jarURL, false);
 
@@ -401,15 +414,18 @@ public class OsgiLoaderTest {
                     JarMissingEvent jarMissingEvent = (JarMissingEvent) arg;
                     String jarName = jarMissingEvent.getJarName();
                     if (jarName.equals(EXISTING_JAR_NAME)) {
-                        File sourceFile = new File(
-                                "/Applications/java/talend/git/studio-full-master2/tcommon-studio-se/test/plugins/org.talend.librariesmanager.ui.test/resources/plugins/test.lib.fragment.with.existing.jar/lib/any-existing.jar");
-                        File desctinationFile = new File(libJavaFolderFile, jarName);
                         try {
-                            FileUtils.copyFile(sourceFile, desctinationFile);
-                        } catch (IOException e) {
-                            throw new RuntimeException("failed to copy jar", e); //$NON-NLS-1$
+                            File sourceFile = new File(new URI(FRAGMENT_WITH_LIB_FOLDER_URL + "lib/any-existing.jar")); //$NON-NLS-1$
+                            File desctinationFile = new File(libJavaFolderFile, jarName);
+                            try {
+                                FileUtils.copyFile(sourceFile, desctinationFile);
+                            } catch (IOException e) {
+                                throw new RuntimeException("failed to copy jar", e); //$NON-NLS-1$
+                            }
+                            observerCalled[0] = true;
+                        } catch (URISyntaxException e1) {
+                            throw new RuntimeException(e1);
                         }
-                        observerCalled[0] = true;
                     } else {
                         throw new RuntimeException("Missing jar observer did not receive the expected jar name:" + jarName + "!=" //$NON-NLS-1$
                                 + EXISTING_JAR_NAME);
@@ -422,8 +438,8 @@ public class OsgiLoaderTest {
         Bundle bundleNoJar = osgiBundle.getBundleContext().installBundle(BUNDLE_NO_LIB_FOLDER_URL);
         Bundle bundle = osgiBundle.getBundleContext().installBundle(BUNDLE_CALLING_LIB_FOLDER_URL);
         try {
-            // start the bundle to initiate a hook to be called
-            bundle.start();
+            // this forces the bundle classloader to be initialised
+            bundleNoJar.getResource("foo"); //$NON-NLS-1$
             URL jarURL = FileLocator.find(bundleNoJar, new Path("lib/any-existing.jar"), null); //$NON-NLS-1$
             checkFileExistsOrNot(jarURL, false);
             jarURL = FileLocator.find(bundleNoJar, new Path("lib/any-existing.jar"), null); //$NON-NLS-1$
@@ -458,15 +474,18 @@ public class OsgiLoaderTest {
                     JarMissingEvent jarMissingEvent = (JarMissingEvent) arg;
                     String jarName = jarMissingEvent.getJarName();
                     if (jarName.equals(EXISTING_JAR_NAME)) {
-                        File sourceFile = new File(
-                                "/Applications/java/talend/git/studio-full-master2/tcommon-studio-se/test/plugins/org.talend.librariesmanager.ui.test/resources/plugins/test.lib.fragment.with.existing.jar/lib/any-existing.jar");
-                        File desctinationFile = new File(libJavaFolderFile, jarName);
                         try {
-                            FileUtils.copyFile(sourceFile, desctinationFile);
-                        } catch (IOException e) {
-                            throw new RuntimeException("failed to copy jar", e); //$NON-NLS-1$
+                            File sourceFile = new File(new URI(FRAGMENT_WITH_LIB_FOLDER_URL + "lib/any-existing.jar")); //$NON-NLS-1$
+                            File desctinationFile = new File(libJavaFolderFile, jarName);
+                            try {
+                                FileUtils.copyFile(sourceFile, desctinationFile);
+                            } catch (IOException e) {
+                                throw new RuntimeException("failed to copy jar", e); //$NON-NLS-1$
+                            }
+                            observerCalled[0] = true;
+                        } catch (URISyntaxException e1) {
+                            throw new RuntimeException(e1);
                         }
-                        observerCalled[0] = true;
                     } else {
                         throw new RuntimeException("Missing jar observer did not receive the expected jar name:" + jarName + "!=" //$NON-NLS-1$
                                 + EXISTING_JAR_NAME);
@@ -479,14 +498,71 @@ public class OsgiLoaderTest {
         Bundle bundleNoJar = osgiBundle.getBundleContext().installBundle(BUNDLE_NO_LIB_FOLDER_URL);
         Bundle bundle = osgiBundle.getBundleContext().installBundle(BUNDLE_CALLING_LIB_FOLDER_URL);
         try {
-            // start the bundle to initiate a hook to be called
-            bundle.start();
+            // this forces the bundle classloader to be initialised
+            bundleNoJar.getResource("foo"); //$NON-NLS-1$
             URL jarURL = FileLocator.find(bundleNoJar, new Path("lib/any-existing.jar"), null); //$NON-NLS-1$
             checkFileExistsOrNot(jarURL, false);
             setupMissingJarLoadingObserver(observer);
             jarURL = FileLocator.find(bundleNoJar, new Path("lib/any-existing.jar"), null); //$NON-NLS-1$
             checkFileExistsOrNot(jarURL, true);
 
+            assertTrue(observerCalled[0]);
+
+        } finally {
+            bundle.uninstall();
+            bundleNoJar.uninstall();
+            unsetupMissingJarLoadingObserver(observer);
+        }
+        bundle = Platform.getBundle(BUNDLE_CALLING_LIB);
+        assertNull(bundle);
+        bundleNoJar = Platform.getBundle(BUNDLE_NO_LIB);
+        assertNull(bundleNoJar);
+    }
+
+    @Test
+    public void CheckInvokeMissingJarMethodAfterFindJarFailed() throws IOException, BundleException, ClassNotFoundException,
+            InstantiationException, IllegalAccessException, SecurityException, NoSuchMethodException, IllegalArgumentException,
+            InvocationTargetException {
+        final Boolean[] observerCalled = new Boolean[1];
+        observerCalled[0] = false;
+        Observer observer = new Observer() {
+
+            @Override
+            public void update(Observable o, Object arg) {
+                if (arg != null && arg instanceof JarMissingEvent) {
+                    JarMissingEvent jarMissingEvent = (JarMissingEvent) arg;
+                    String jarName = jarMissingEvent.getJarName();
+                    if (jarName.equals(EXISTING_JAR_NAME)) {
+                        try {
+                            File sourceFile = new File(new URI(FRAGMENT_WITH_LIB_FOLDER_URL + "lib/any-existing.jar")); //$NON-NLS-1$
+                            File desctinationFile = new File(libJavaFolderFile, jarName);
+                            try {
+                                FileUtils.copyFile(sourceFile, desctinationFile);
+                            } catch (IOException e) {
+                                throw new RuntimeException("failed to copy jar", e); //$NON-NLS-1$
+                            }
+                            observerCalled[0] = true;
+                        } catch (URISyntaxException e1) {
+                            throw new RuntimeException(e1);
+                        }
+                    } else {
+                        throw new RuntimeException("Missing jar observer did not receive the expected jar name:" + jarName + "!=" //$NON-NLS-1$
+                                + EXISTING_JAR_NAME);
+                    }
+                } else {// notification is not expected so thrown an exception for the test to fail
+                    throw new RuntimeException("Missing jar observer did not receive the proper event :" + arg);
+                }
+            }
+        };
+        Bundle bundleNoJar = osgiBundle.getBundleContext().installBundle(BUNDLE_NO_LIB_FOLDER_URL);
+        Bundle bundle = osgiBundle.getBundleContext().installBundle(BUNDLE_CALLING_LIB_FOLDER_URL);
+        try {
+            // this forces the bundle classloader to be initialised
+            bundleNoJar.getResource("foo"); //$NON-NLS-1$
+            URL jarURL = FileLocator.find(bundleNoJar, new Path("lib/any-existing.jar"), null); //$NON-NLS-1$
+            checkFileExistsOrNot(jarURL, false);
+            setupMissingJarLoadingObserver(observer);
+            callBundleMethodToCallLibApi(bundle);
             assertTrue(observerCalled[0]);
 
         } finally {

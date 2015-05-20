@@ -14,6 +14,7 @@ package org.talend.osgi.hook;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.eclipse.osgi.storage.bundlefile.BundleEntry;
@@ -49,7 +50,10 @@ class MissingJarBundleEntry extends BundleEntry {
 
     @Override
     public String getName() {
-        return null;
+        // we return a final slash on purpose so that
+        // org.eclipse.osgi.internal.loader.classpath.ClasspathManager.getClasspath(String, Generation)
+        // will be able to create a BundleFile
+        return path + "/"; //$NON-NLS-1$
     }
 
     @Override
@@ -64,6 +68,12 @@ class MissingJarBundleEntry extends BundleEntry {
 
     @Override
     public URL getFileURL() {
-        return null;
+        try {
+            return new URL("file:" + path); //$NON-NLS-1$
+        } catch (MalformedURLException e) {
+            // should never happend so throw a runtime in case it does
+            throw new RuntimeException(e);
+        }
     }
+
 }
