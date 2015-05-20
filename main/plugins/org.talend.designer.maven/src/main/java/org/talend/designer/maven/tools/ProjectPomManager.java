@@ -24,17 +24,29 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.MavenModelManager;
+import org.talend.core.model.process.JobInfo;
 import org.talend.designer.maven.model.TalendMavenConstants;
 import org.talend.designer.maven.tools.repo.LocalRepositoryManager;
 import org.talend.designer.maven.utils.PomUtil;
-import org.talend.designer.runprocess.ProcessorException;
+import org.talend.designer.runprocess.IProcessor;
 
 /**
  * DOC ggu class global comment. Detailled comment
  */
 public class ProjectPomManager {
 
+    protected static final MavenModelManager MODEL_MANAGER = MavenPlugin.getMavenModelManager();
+
     private IFile projectPomFile;
+
+    /**
+     * true by default, update all
+     */
+    private boolean updateModules = true;
+
+    private boolean updateRepositories = true;
+
+    private boolean updateDependencies = true;
 
     public ProjectPomManager(IProject project) {
         super();
@@ -42,56 +54,90 @@ public class ProjectPomManager {
         this.projectPomFile = project.getFile(TalendMavenConstants.POM_FILE_NAME);
     }
 
-    public void updateProjectPom(IProgressMonitor progressMonitor, List<String> modulesList, IFile jobPomFile)
-            throws ProcessorException {
-        try {
-
-            MavenModelManager mavenModelManager = MavenPlugin.getMavenModelManager();
-            Model projectModel = mavenModelManager.readMavenModel(projectPomFile);
-
-            // check the modules
-            List<String> modules = projectModel.getModules();
-            if (modules == null) {
-                modules = new ArrayList<String>();
-                projectModel.setModules(modules);
-            } else if (!modules.isEmpty()) {
-                modules.clear(); // clean all?
-            }
-            final Model routinesModel = PomUtil.getRoutinesTempalteModel();
-            String routinesModule = PomUtil.getPomFileName(routinesModel.getArtifactId());
-            modules.add(routinesModule);
-
-            if (modulesList != null) {
-                if (modulesList.contains(routinesModule)) {
-                    modulesList.remove(routinesModule); // make sure no duplicated.
-                }
-                modules.addAll(modulesList);
-            }
-
-            // check repository
-            updateProjectRepositories(progressMonitor, projectModel);
-
-            // check the dependencies
-            if (jobPomFile.getLocation().toFile().exists()) {
-                if (!jobPomFile.exists()) {
-                    jobPomFile.getParent().refreshLocal(IResource.DEPTH_ONE, progressMonitor);
-                }
-                Model jobModel = mavenModelManager.readMavenModel(jobPomFile);
-
-                // fresh is false, make sure all jobs can be compile ok
-                ProcessorDependenciesManager.updateDependencies(progressMonitor, projectModel, jobModel.getDependencies(), false);
-            }
-
-            PomUtil.savePom(progressMonitor, projectModel, projectPomFile);
-
-            // install custom jar to m2/repo
-            PomUtil.installDependencies(projectModel.getDependencies());
-        } catch (Exception e) {
-            throw new ProcessorException(e);
-        }
+    public void setUpdateModules(boolean updateModules) {
+        this.updateModules = updateModules;
     }
 
-    protected void updateProjectRepositories(IProgressMonitor progressMonitor, Model projectModel) throws ProcessorException {
+    public void setUpdateRepositories(boolean updateRepositories) {
+        this.updateRepositories = updateRepositories;
+    }
+
+    public void setUpdateDependencies(boolean updateDependencies) {
+        this.updateDependencies = updateDependencies;
+    }
+
+    protected boolean isUpdateModules() {
+        return updateModules;
+    }
+
+    protected boolean isUpdateRepositories() {
+        return updateRepositories;
+    }
+
+    protected boolean isUpdateDependencies() {
+        return updateDependencies;
+    }
+
+    public void update(IProgressMonitor monitor, IProcessor processor) throws Exception {
+        projectPomFile.getProject().refreshLocal(IResource.DEPTH_ONE, monitor);
+        if (!projectPomFile.exists()) {// delete by user manually?
+            // create it or nothing to do?
+            return;
+        }
+        Model projectModel = MODEL_MANAGER.readMavenModel(projectPomFile);
+
+        // modules
+        updateModulesList(monitor, processor, projectModel);
+        // check repository
+        updateRepositories(monitor, processor, projectModel);
+        // dependencies
+        updateDependencies(monitor, processor, projectModel);
+
+        PomUtil.savePom(monitor, projectModel, projectPomFile);
+
+        projectPomFile.getProject().refreshLocal(IResource.DEPTH_ONE, monitor);
+    }
+
+    /**
+     * 
+     * update the modules list for project pom.
+     * 
+     * The routines should be added always.
+     */
+    protected void updateModulesList(IProgressMonitor monitor, IProcessor processor, Model projectModel) throws Exception {
+        if (!isUpdateModules()) {
+            return;
+        }
+        List<String> modulesList = new ArrayList<String>();
+        // add routines always.
+        final Model routinesModel = PomUtil.getRoutinesTempalteModel();
+        String routinesModule = PomUtil.getPomFileName(routinesModel.getArtifactId());
+        modulesList.add(routinesModule);
+
+        for (JobInfo childJob : processor.getBuildChildrenJobs()) {
+            modulesList.add(PomUtil.getPomFileName(childJob.getJobName()));
+        }
+        modulesList.add(PomUtil.getPomFileName(processor.getProperty().getLabel()));
+
+        // check the modules
+        List<String> modules = projectModel.getModules();
+        if (modules == null) {
+            modules = new ArrayList<String>();
+            projectModel.setModules(modules);
+        } else if (!modules.isEmpty()) {
+            modules.clear(); // clean all?
+        }
+
+        modules.addAll(modulesList);
+    }
+
+    /**
+     * When the enable the local repo in codes project(.Java), make sure set the local repository.
+     */
+    protected void updateRepositories(IProgressMonitor monitor, IProcessor processor, Model projectModel) throws Exception {
+        if (!isUpdateRepositories()) {
+            return;
+        }
         // set repositories.
         List<Repository> repositories = projectModel.getRepositories();
         if (repositories == null) {
@@ -121,4 +167,39 @@ public class ProjectPomManager {
         }
 
     }
+
+    /**
+     * If standard job and base job pom file existed, will use the dependences of job pom directly.
+     */
+    protected void updateDependencies(IProgressMonitor monitor, IProcessor processor, Model projectModel) throws Exception {
+        if (!isUpdateDependencies()) {
+            return;
+        }
+        IFile basePomFile = getBasePomFile();
+        if (isStandardJob() && basePomFile != null && basePomFile.getLocation().toFile().exists()) {
+            if (!basePomFile.exists()) {
+                basePomFile.getParent().refreshLocal(IResource.DEPTH_ONE, monitor);
+            }
+            Model jobModel = MODEL_MANAGER.readMavenModel(basePomFile);
+
+            // fresh is false, make sure all jobs can be compile ok
+            ProcessorDependenciesManager.updateDependencies(monitor, projectModel, jobModel.getDependencies(), false);
+
+        } else {
+            ProcessorDependenciesManager processorDependenciesManager = new ProcessorDependenciesManager(processor);
+            processorDependenciesManager.updateDependencies(monitor, projectModel);
+        }
+
+        // install custom jar to m2/repo
+        PomUtil.installDependencies(projectModel.getDependencies());
+    }
+
+    protected boolean isStandardJob() {
+        return true;
+    }
+
+    protected IFile getBasePomFile() {
+        return null;
+    }
+
 }

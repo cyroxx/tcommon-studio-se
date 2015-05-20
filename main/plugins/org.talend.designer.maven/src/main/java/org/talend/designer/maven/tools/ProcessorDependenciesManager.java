@@ -50,7 +50,7 @@ public class ProcessorDependenciesManager {
                 }
             }
 
-            return updateDependencies(progressMonitor, model, neededDependencies, true);
+            return updateDependencies(progressMonitor, model, neededDependencies, false);
 
         } catch (Exception e) {
             throw new ProcessorException(e);
