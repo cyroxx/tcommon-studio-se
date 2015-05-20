@@ -148,6 +148,9 @@ public class ContextValuesNatText extends Composite {
 
     protected void updateTextControl(boolean focusOnText) {
         text.setText(getTransformedTextForDialog(focusOnText));
+        text.forceFocus();
+        int textLength = this.text.getText().length();
+        text.setSelection(textLength, textLength);
         if (focusOnText) {
             hideButtonControl(true);
         }
