@@ -363,7 +363,6 @@ public class RemoteModulesHelper {
             if (MavenUrlHelper.isMvnUrl(jarOrUrl)) {
                 return jarOrUrl;
             } else {
-                ExceptionHandler.log("Warning : the groupid and version in the url may not be correct");
                 return MavenUrlHelper.generateMvnUrlForJarName(jarOrUrl);
             }
         } else {
