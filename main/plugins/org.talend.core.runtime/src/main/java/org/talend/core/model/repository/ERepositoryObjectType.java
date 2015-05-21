@@ -89,7 +89,7 @@ public class ERepositoryObjectType extends DynaEnum<ERepositoryObjectType> {
     public static final String PROD_MDM = ProductUtils.PROD_MDM;
 
     public final static ERepositoryObjectType SVN_ROOT = new ERepositoryObjectType("repository.svnroot", "", "SVN_ROOT", true, 1,
-            new String[] { PROD_DI, PROD_CAMEL }, new String[] {}, false);
+            new String[] { PROD_DI, PROD_CAMEL, PROD_DQ }, new String[] {}, false);
 
     public final static ERepositoryObjectType SVG_BUSINESS_PROCESS = new ERepositoryObjectType("repository.svgBusinessProcess",
             "businessProcessSVG", "SVG_BUSINESS_PROCESS", true, 3, new String[] { PROD_DI }, new String[] {});
@@ -198,7 +198,7 @@ public class ERepositoryObjectType extends DynaEnum<ERepositoryObjectType> {
             "repository.folder", "", "FOLDER", true, 50, new String[] { PROD_DI }, new String[] {}, false); //$NON-NLS-1$
 
     public final static ERepositoryObjectType REFERENCED_PROJECTS = new ERepositoryObjectType(
-            "repository.referencedProjects", "", "REFERENCED_PROJECTS", 51, true, "repository.referencedProjects.alias", new String[] { PROD_DI }, new String[] {}, false); //$NON-NLS-1$ //$NON-NLS-2$
+            "repository.referencedProjects", "", "REFERENCED_PROJECTS", 51, true, "repository.referencedProjects.alias", new String[] { PROD_DI, PROD_DQ }, new String[] {}, false); //$NON-NLS-1$ //$NON-NLS-2$
 
     public final static ERepositoryObjectType GENERATED = new ERepositoryObjectType(
             "repository.generated", "documentations/generated", "GENERATED", true, 52, new String[] { PROD_DI }, new String[] {}, false); //$NON-NLS-1$
