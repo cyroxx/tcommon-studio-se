@@ -14,7 +14,6 @@ package org.talend.core.model.general;
 
 import java.util.List;
 
-import org.talend.commons.exception.ExceptionHandler;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.core.runtime.maven.MavenUrlHelper;
@@ -400,7 +399,6 @@ public class ModuleNeeded {
     }
 
     private String getDefaulMavenUrl() {
-        ExceptionHandler.log("Warning : the groupid and version in the url may not be correct");
         return MavenUrlHelper.generateMvnUrlForJarName(moduleName);
 
     }
