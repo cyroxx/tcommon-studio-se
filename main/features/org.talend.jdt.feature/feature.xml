@@ -200,4 +200,10 @@
          version="2.9.1.xx-201411061335-e44-RELEASE"
          unpack="false"/>
 
+   <plugin
+         id="org.codehaus.groovy"
+         download-size="0"
+         install-size="0"
+         version="1.8.6.xx-201411061335-e44-RELEASE"/>
+
 </feature>
