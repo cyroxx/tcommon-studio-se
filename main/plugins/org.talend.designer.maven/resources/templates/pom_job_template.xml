@@ -55,16 +55,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<executions>
-					<execution>
-						<configuration>
-							<includes>
-								<!-- only compile the job source -->
-								<include>${talend.job.path}/*</include>
-							</includes>
-						</configuration>
-					</execution>
-				</executions>
+				<configuration>
+					<includes>
+						<!-- only compile the job source -->
+						<include>${talend.job.path}/*</include>
+					</includes>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

@@ -67,19 +67,5 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		<plugins>
-			<plugin><!-- won't compile any files, try to compile in the sub-modules selves. -->
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>default-compile</id>
-						<phase>none</phase>
-					</execution>
-				</executions>
-				<!-- <configuration> <excludes> <exclude>**/*.*</exclude> </excludes> 
-					</configuration> -->
-			</plugin>
-		</plugins>
 	</build>
 </project>

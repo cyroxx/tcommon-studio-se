@@ -18,9 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
+import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.talend.core.model.process.JobInfo;
+import org.talend.designer.maven.model.TalendMavenConstants;
 import org.talend.designer.maven.utils.PomUtil;
 import org.talend.designer.runprocess.IProcessor;
 import org.talend.designer.runprocess.ProcessorException;
@@ -48,6 +52,17 @@ public class ProcessorDependenciesManager {
                 if (dependency != null) {
                     neededDependencies.add(dependency);
                 }
+            }
+            String parentId = processor.getProperty().getId();
+            Set<JobInfo> jobInfos = processor.getBuildChildrenJobs();
+            for (JobInfo jobInfo : jobInfos) {
+//                if (jobInfo.getFatherJobInfo() != null && jobInfo.getFatherJobInfo().getJobId().equals(parentId)) {
+                    Dependency dependency = new Dependency();
+                    dependency.setGroupId(TalendMavenConstants.DEFAULT_JOB_GROUP_ID);
+                    dependency.setArtifactId(jobInfo.getJobName());
+                    dependency.setVersion(jobInfo.getJobVersion());
+                        neededDependencies.add(dependency);
+//                }
             }
 
             return updateDependencies(progressMonitor, model, neededDependencies, false);

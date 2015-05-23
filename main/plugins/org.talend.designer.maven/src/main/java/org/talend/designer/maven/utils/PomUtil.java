@@ -364,7 +364,9 @@ public class PomUtil {
                     }
                     String jarPath = libService.getJarPath(d.getArtifactId() + '.' + type);
                     try {
-                        installJar(repoManager, new File(jarPath), PomUtil.convertToArtifact(d));
+                        if (jarPath != null) {
+                            installJar(repoManager, new File(jarPath), PomUtil.convertToArtifact(d));
+                        }
                     } catch (Exception e) {
                         ExceptionHandler.process(e);
                     }

@@ -25,6 +25,7 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.connector.wagon.WagonRepositoryConnectorFactory;
 import org.eclipse.aether.deployment.DeployRequest;
 import org.eclipse.aether.deployment.DeployResult;
 import org.eclipse.aether.impl.DefaultServiceLocator;
@@ -104,6 +105,7 @@ public class LocalRepositoryAetherManager extends LocalRepositoryManager {
     protected RepositorySystem newRepositorySystem() {
         DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
         locator.addService(RepositoryConnectorFactory.class, AetherRepositoryConnectorFactory.class);
+        locator.addService(RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class);
 
         // locator.addService(RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class);
         // locator.addService(TransporterFactory.class, FileTransporterFactory.class);

@@ -96,50 +96,55 @@
 		</fileSet>
 		<!-- If have children jobs, will add here -->
 	</fileSets>
-	<dependencySets>
-		<dependencySet>
-			<outputDirectory>${talend.job.name}/lib</outputDirectory>
-			<includes>
-				<include>org.talend.libraries:*</include>
-			</includes>
-			<outputFileNameMapping>${artifact.artifactId}.${artifact.extension}
-			</outputFileNameMapping>
-			<useProjectArtifact>false</useProjectArtifact>
-		</dependencySet>
-		<dependencySet>
-			<outputDirectory>${talend.job.name}/lib</outputDirectory>
-			<excludes>
-				<exclude>org.talend.libraries:*</exclude>
-			</excludes>
-			<useProjectArtifact>false</useProjectArtifact>
-		</dependencySet>
-	</dependencySets>
-	<moduleSets>
-		<moduleSet>
-			<useAllReactorProjects>true</useAllReactorProjects>
-			<includes>
-				<include>org.talend.job:*</include>
-			</includes>
-			<binaries>
-				<outputDirectory>${talend.job.name}</outputDirectory>
-				<includeDependencies>false</includeDependencies>
-				<unpack>false</unpack>
-				<!-- <outputFileNameMapping>${module.artifactId}_${module.version}.${module.extension} 
-					</outputFileNameMapping> -->
-			</binaries>
-		</moduleSet>
-		<moduleSet><!-- only for routines -->
-			<useAllReactorProjects>true</useAllReactorProjects>
-			<includes>
-				<include>org.talend.code:*</include>
-			</includes>
-			<binaries>
-				<outputDirectory>${talend.job.name}/lib</outputDirectory>
-				<includeDependencies>false</includeDependencies>
-				<unpack>false</unpack>
-				<outputFileNameMapping>${module.artifactId}.${module.extension}
-				</outputFileNameMapping>
-			</binaries>
-		</moduleSet>
-	</moduleSets>
+<dependencySets>
+        <dependencySet>
+            <outputDirectory>${talend.job.name}/lib</outputDirectory>
+            <includes>
+                <include>org.talend.libraries:*</include>
+            </includes>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}
+            </outputFileNameMapping>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>${talend.job.name}/lib</outputDirectory>
+            <excludes>
+                <exclude>org.talend.libraries:*</exclude>
+                <exclude>${artifact.groupId}:*</exclude>
+            </excludes>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+    </dependencySets>
+    <moduleSets>
+        <moduleSet>
+            <useAllReactorProjects>true</useAllReactorProjects>
+            <includes>
+                <include>${artifact.groupId}:${artifact.artifactId}</include>
+            </includes>
+            <binaries>
+                <outputDirectory>${talend.job.name}</outputDirectory>
+                <includeDependencies>true</includeDependencies>
+                <unpack>false</unpack>
+                <includes>
+                    <include>org.talend.job:*</include>
+                </includes>
+                <!-- <outputFileNameMapping>${module.artifactId}_${module.version}.${module.extension}
+                    </outputFileNameMapping> -->
+            </binaries>
+        </moduleSet>
+        <moduleSet>
+<!-- only for routines -->
+            <useAllReactorProjects>true</useAllReactorProjects>
+            <includes>
+                <include>org.talend.code:*</include>
+            </includes>
+            <binaries>
+                <outputDirectory>${talend.job.name}/lib</outputDirectory>
+                <includeDependencies>false</includeDependencies>
+                <unpack>false</unpack>
+                <outputFileNameMapping>${module.artifactId}.${module.extension}
+                </outputFileNameMapping>
+            </binaries>
+        </moduleSet>
+    </moduleSets>
 </assembly>

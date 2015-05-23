@@ -39,17 +39,17 @@ public abstract class LocalRepositoryManager {
 
     public static final LocalRepositoryManager LAUNCHER;
 
-    public static final LocalRepositoryManager AETHER;
+//    public static final LocalRepositoryManager AETHER;
     static {
         if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
             IRunProcessService processService = (IRunProcessService) GlobalServiceRegister.getDefault().getService(
                     IRunProcessService.class);
             IProject project = processService.getTalendProcessJavaProject().getProject();
             LAUNCHER = new LocalRepsitoryLauncherManager(project);
-            AETHER = new LocalRepositoryAetherManager(project.getLocation().toFile());
+//            AETHER = new LocalRepositoryAetherManager(project.getLocation().toFile());
         } else {
             LAUNCHER = null;
-            AETHER = null;
+//            AETHER = null;
         }
     }
 
