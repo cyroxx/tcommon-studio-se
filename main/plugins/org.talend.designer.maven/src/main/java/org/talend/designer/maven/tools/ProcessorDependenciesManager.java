@@ -56,13 +56,13 @@ public class ProcessorDependenciesManager {
             String parentId = processor.getProperty().getId();
             Set<JobInfo> jobInfos = processor.getBuildChildrenJobs();
             for (JobInfo jobInfo : jobInfos) {
-//                if (jobInfo.getFatherJobInfo() != null && jobInfo.getFatherJobInfo().getJobId().equals(parentId)) {
+                if (jobInfo.getFatherJobInfo() != null && jobInfo.getFatherJobInfo().getJobId().equals(parentId)) {
                     Dependency dependency = new Dependency();
                     dependency.setGroupId(TalendMavenConstants.DEFAULT_JOB_GROUP_ID);
                     dependency.setArtifactId(jobInfo.getJobName());
                     dependency.setVersion(jobInfo.getJobVersion());
-                        neededDependencies.add(dependency);
-//                }
+                    neededDependencies.add(dependency);
+                }
             }
 
             return updateDependencies(progressMonitor, model, neededDependencies, false);
