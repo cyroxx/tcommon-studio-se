@@ -31,7 +31,9 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.talend.core.i18n.Messages;
 import org.talend.core.model.context.ContextUtils;
+import org.talend.core.model.context.JobContextManager;
 import org.talend.core.model.process.IContextParameter;
+import org.talend.core.model.properties.Item;
 
 /**
  * created by ldong on Aug 7, 2014 Detailled comment
@@ -142,9 +144,12 @@ public class ContextOrderProperties extends Properties {
             }
         } else if (ContextParameterUtils.isEmptyParameter(currentParameter.getSource())) {
             this.setProperty(currentParameter.getName(), TalendTextUtils.trimParameter(currentParameter.getValue()));
+        } else if (currentParameter.getSource().equals(JobContextManager.dataSource)) {
+            this.setProperty(currentParameter.getName(), TalendTextUtils.trimParameter(currentParameter.getValue()));
         } else {
-            String repositryContextName = ContextUtils.getRepositoryContextItemById(currentParameter.getSource()).getProperty()
-                    .getLabel();
+            Item contextItem = ContextUtils.getRepositoryContextItemById(currentParameter.getSource());
+            // TODO
+            String repositryContextName = contextItem.getProperty().getLabel();
             if (previousParameter.isBuiltIn()) {
                 this.setProperty(currentParameter.getName(), TalendTextUtils.trimParameter(currentParameter.getValue()),
                         REPOSITORY_COMMENT + repositryContextName);

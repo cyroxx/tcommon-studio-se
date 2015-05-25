@@ -22,6 +22,7 @@ import org.talend.core.model.process.IContext;
 import org.talend.core.model.process.IContextParameter;
 import org.talend.core.model.process.INode;
 import org.talend.core.model.process.IProcess;
+import org.talend.core.model.properties.Information;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.ProcessItem;
 import org.talend.core.model.repository.ERepositoryObjectType;
@@ -60,4 +61,6 @@ public interface ITestContainerProviderService extends IService {
     public void copyDataSetFiles(IProcess process, IPath srcPath);
 
     public String getTestDataValue(IProcess process, IContext context, IContextParameter para);
+
+    public List<Information> getTestContainerInformations(Item item);
 }
