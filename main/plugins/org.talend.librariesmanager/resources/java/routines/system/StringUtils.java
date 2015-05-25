@@ -13,6 +13,7 @@
 package routines.system;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,6 +69,38 @@ public class StringUtils {
         String[] result = new String[resultSize];
         return substrings.subList(0, resultSize).toArray(result);
 	}
+	
+	/**
+     * split SQL columns like that :
+     * from :
+     * id, name, CONCAT(name,UPPER(address)), CONCAT(age,name)
+     * to
+     * [id] [name] [CONCAT(name,UPPER(address))] [CONCAT(age,name)]
+     */
+    
+    public static String[] splitSQLColumns(String sql) {
+    	List<String> result = new ArrayList<String>();
+    	int blockCount = 0;
+    	int start = 0;
+    	for(int i=0;i<sql.length();i++) {
+    		char c = sql.charAt(i);
+    		if(c == '(') {
+    			blockCount++;
+    		} else if(c == ')') {
+    			blockCount--;
+    		}
+    		
+    		if((c == ',' && (blockCount<1))) {
+    			result.add(sql.substring(start, i));
+    			start = i + 1;
+    		}
+    		
+    		if(i == (sql.length()-1)) {
+    			result.add(sql.substring(start));
+    		}
+    	}
+    	return result.toArray(new String[0]);
+    }
 
     public static String[] split(String str, String separator) {
         return str.split(separator);
