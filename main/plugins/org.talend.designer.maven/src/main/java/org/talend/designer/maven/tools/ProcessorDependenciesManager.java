@@ -18,10 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
-import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.talend.core.model.process.JobInfo;
 import org.talend.designer.maven.model.TalendMavenConstants;
