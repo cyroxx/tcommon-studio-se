@@ -14,6 +14,7 @@ package org.talend.core.ui;
 
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IPath;
 import org.talend.commons.exception.PersistenceException;
@@ -63,4 +64,7 @@ public interface ITestContainerProviderService extends IService {
     public String getTestDataValue(IProcess process, IContext context, IContextParameter para);
 
     public List<Information> getTestContainerInformations(Item item);
+
+    public List<IFile> getTestReportFiles(ProcessItem testItem);
+
 }

@@ -82,6 +82,16 @@ public interface ITalendProcessJavaProject {
     IFolder getItemsFolder();
 
     /**
+     * tests
+     */
+    IFolder getTestsFolder();
+
+    /**
+     * create sub folder under target.
+     */
+    IFolder getTargetFolder();
+
+    /**
      * 
      * create sub folder under src/main/java.
      */
@@ -125,6 +135,8 @@ public interface ITalendProcessJavaProject {
      * else will build each modules.
      */
     void buildModules(String goals, String[] childrenModules);
+
+    void buildModules(String goals, String[] childrenModules, String programArgs);
 
     /**
      * 

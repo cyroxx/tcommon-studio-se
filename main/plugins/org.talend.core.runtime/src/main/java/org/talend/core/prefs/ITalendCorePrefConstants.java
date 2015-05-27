@@ -160,4 +160,11 @@ public interface ITalendCorePrefConstants {
     public static final String SVN_UPDATE_INFO_AUTO_CHECK = "PerformancePreferencePage.svn_update_info_auto_check"; //$NON-NLS-1$
 
     public static final String SVN_UPDATE_INFO_AUTO_CHECK_TIME_INTERVAL = "PerformancePreferencePage.svn_update_info_auto_check_time_interval"; //$NON-NLS-1$
+
+    /**
+     * <b>!!! NOTE !!!:</b><br/>
+     * This prefrence <b>must</b> be stored in <b>PlatformUI prefrence</b>, since it will be used in login dialog while
+     * coreUIPlugin maybe not loaded yet
+     */
+    public static final String LOGON_DIALOG_ALWAYS_ASK_ME_AT_STARTUP = "logonDialog.alwaysAskMeAtStartUp"; //$NON-NLS-1$
 }

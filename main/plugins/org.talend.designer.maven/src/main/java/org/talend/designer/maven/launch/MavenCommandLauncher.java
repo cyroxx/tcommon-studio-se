@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.designer.maven.launch;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -82,6 +83,8 @@ public class MavenCommandLauncher {
      */
     private boolean skipTests = false;
 
+    private String programArguments;
+
     public MavenCommandLauncher(String goals) {
         super();
         Assert.isNotNull(goals);
@@ -104,6 +107,10 @@ public class MavenCommandLauncher {
 
     public void setSkipTests(boolean skipTests) {
         this.skipTests = skipTests;
+    }
+
+    public void setProgramArguments(String programArguments) {
+        this.programArguments = programArguments;
     }
 
     protected ILaunchConfiguration createLaunchConfiguration(IContainer basedir, String goal) {
@@ -146,6 +153,10 @@ public class MavenCommandLauncher {
             IPath path = getJREContainerPath(basedir);
             if (path != null) {
                 workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_JRE_CONTAINER_PATH, path.toPortableString());
+            }
+
+            if (StringUtils.isNotEmpty(programArguments)) {
+                workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, programArguments);
             }
 
             // TODO when launching Maven with debugger consider to add the following property
@@ -234,7 +245,7 @@ public class MavenCommandLauncher {
             throws CoreException {
         monitor.beginTask("", 1); //$NON-NLS-1$
         try {
-            MavenLaunchDelegate mvld = new MavenLaunchDelegate();
+            MavenLaunchDelegate mvld = new TalendMavenLaunchDelegate();
             ILaunch launch = new Launch(configuration, mode, null);
             String type = "org.eclipse.m2e.launching.MavenSourceLocator"; //$NON-NLS-1$
             IPersistableSourceLocator locator = DebugPlugin.getDefault().getLaunchManager().newSourceLocator(type);

@@ -224,7 +224,7 @@ public class BigDataNode extends AbstractNode implements IBigDataNode {
                                         colName = nodeElemForList.getListItemsDisplayName()[index];
                                     }
                                 }
-                                columnList.add(bigDataNode.getMetadataList().get(0).getColumn(colName));
+                                columnList.add(bigDataNode.getIncomingConnections().get(0).getMetadataTable().getColumn(colName));
                             } else {
                                 throw new RuntimeException(
                                         "The parameter " + partitionKey[0] + "." + partitionKey[1] + " does not exist in the component " + this.getComponentName()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -308,7 +308,7 @@ public class BigDataNode extends AbstractNode implements IBigDataNode {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.model.process.IBigDataNode#setKeyList(java.lang.String, java.util.List)
      */
     @Override

@@ -33,6 +33,10 @@ public class MavenSystemFolders {
 
     public static final ProjectSystemFolder ITEMS = new ProjectSystemFolder("src/main/items");
 
+    public static final ProjectSystemFolder TEST_REPORTS = new ProjectSystemFolder("tests");
+
+    public static final ProjectSystemFolder TARGET = new ProjectSystemFolder("target");
+
     public static final ProjectSystemFolder[] SIMPLE_DIRS = { JAVA, RESOURCES };
 
     public static final ProjectSystemFolder[] TEST_DIRS = { JAVA_TEST, RESOURCES_TEST };

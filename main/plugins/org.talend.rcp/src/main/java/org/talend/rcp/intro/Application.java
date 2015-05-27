@@ -20,7 +20,6 @@ import java.net.URL;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.adaptor.EclipseStarter;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -83,8 +82,8 @@ public class Application implements IApplication {
 
     @Override
     public Object start(IApplicationContext context) throws Exception {
-        if (!ArrayUtils.contains(Platform.getApplicationArgs(), EclipseCommandLine.TALEND_DISABLE_LOGINDIALOG_COMMAND) &&
-                !ArrayUtils.contains(Platform.getApplicationArgs(), "-clean")
+        if (!ArrayUtils.contains(Platform.getApplicationArgs(), EclipseCommandLine.TALEND_DISABLE_LOGINDIALOG_COMMAND)
+                && !ArrayUtils.contains(Platform.getApplicationArgs(), "-clean")
                 && "true".equals(System.getProperty("talend.osgi.clean"))) {//$NON-NLS-1$ //$NON-NLS-2$  
             // start studio with -clean
             EclipseCommandLine.updateOrCreateExitDataPropertyWithCommand("-clean", null, false);
@@ -107,10 +106,12 @@ public class Application implements IApplication {
 
             checkBrowserSupport();
 
-            if (!ArrayUtils.contains(Platform.getApplicationArgs(), EclipseCommandLine.TALEND_DISABLE_LOGINDIALOG_COMMAND)
-                    && !Boolean.parseBoolean(System.getProperty("talend.project.reload"))) {//$NON-NLS-1$ 
-                openLicenseAndRegister(shell);
-            }
+            // it is removed to plugin org.talend.license.gui
+            // if (!ArrayUtils.contains(Platform.getApplicationArgs(),
+            // EclipseCommandLine.TALEND_DISABLE_LOGINDIALOG_COMMAND)
+            //                    && !Boolean.parseBoolean(System.getProperty("talend.project.reload"))) {//$NON-NLS-1$ 
+            // openLicenseAndRegister(shell);
+            // }
 
             IMigrationToolService service = (IMigrationToolService) GlobalServiceRegister.getDefault().getService(
                     IMigrationToolService.class);

@@ -27,6 +27,7 @@ import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.PlatformUI;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.ICoreService;
 import org.talend.core.model.xml.XmlArray;
@@ -44,6 +45,8 @@ public class CorePreferencePage extends FieldEditorPreferencePage implements IWo
     // private BooleanFieldEditor groupBySource =null;
 
     private List<FieldEditor> fields = new ArrayList<FieldEditor>();
+
+    protected BooleanFieldEditor alwaysAskAtStartup;
 
     /**
      * Construct a new CorePreferencePage.
@@ -100,9 +103,22 @@ public class CorePreferencePage extends FieldEditorPreferencePage implements IWo
         addField(ireportPath);
 
         BooleanFieldEditor alwaysWelcome = new BooleanFieldEditor(ITalendCorePrefConstants.ALWAYS_WELCOME,
-                Messages.getString("CorePreferencePage.alwaysWelcome"), //$NON-NLS-1$
+                Messages.getString("CorePreferencePage.alwaysWelcome.v2"), //$NON-NLS-1$
                 fieldEditorParent);
         addField(alwaysWelcome);
+
+        alwaysAskAtStartup = new BooleanFieldEditor(ITalendCorePrefConstants.LOGON_DIALOG_ALWAYS_ASK_ME_AT_STARTUP,
+                Messages.getString("CorePreferencePage.alwaysAskAtStartup"), //$NON-NLS-1$
+                fieldEditorParent);
+        addField(alwaysAskAtStartup);
+
+    }
+
+    @Override
+    protected void performApply() {
+        super.performApply();
+        PlatformUI.getPreferenceStore().setValue(ITalendCorePrefConstants.LOGON_DIALOG_ALWAYS_ASK_ME_AT_STARTUP,
+                getPreferenceStore().getBoolean(ITalendCorePrefConstants.LOGON_DIALOG_ALWAYS_ASK_ME_AT_STARTUP));
     }
 
     /*
@@ -118,6 +134,8 @@ public class CorePreferencePage extends FieldEditorPreferencePage implements IWo
 
             // CorePlugin.getDefault().getDesignerCoreService().switchToCurContextsView();
         }
+        PlatformUI.getPreferenceStore().setValue(ITalendCorePrefConstants.LOGON_DIALOG_ALWAYS_ASK_ME_AT_STARTUP,
+                getPreferenceStore().getBoolean(ITalendCorePrefConstants.LOGON_DIALOG_ALWAYS_ASK_ME_AT_STARTUP));
         return ok;
     }
 
@@ -132,7 +150,16 @@ public class CorePreferencePage extends FieldEditorPreferencePage implements IWo
      */
     @Override
     public void init(IWorkbench workbench) {
-        // Do nothing
+        getPreferenceStore().setValue(ITalendCorePrefConstants.LOGON_DIALOG_ALWAYS_ASK_ME_AT_STARTUP,
+                PlatformUI.getPreferenceStore().getBoolean(ITalendCorePrefConstants.LOGON_DIALOG_ALWAYS_ASK_ME_AT_STARTUP));
+    }
+
+    @Override
+    protected void performDefaults() {
+        super.performDefaults();
+        getPreferenceStore().setValue(ITalendCorePrefConstants.LOGON_DIALOG_ALWAYS_ASK_ME_AT_STARTUP, true);
+        PlatformUI.getPreferenceStore().setValue(ITalendCorePrefConstants.LOGON_DIALOG_ALWAYS_ASK_ME_AT_STARTUP, true);
+        alwaysAskAtStartup.load();
     }
 
     /*

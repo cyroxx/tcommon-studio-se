@@ -65,4 +65,11 @@ public class LabelText {
         return this.label.getText();
     }
 
+    public Text getTextControl() {
+        return this.text;
+    }
+
+    public Label getLabelControl() {
+        return this.label;
+    }
 }

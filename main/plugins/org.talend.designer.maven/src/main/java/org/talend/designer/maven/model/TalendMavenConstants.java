@@ -40,6 +40,10 @@ public interface TalendMavenConstants {
 
     static final String ASSEMBLY_FILE_NAME = ASSEMBLY_NAME + XML_EXT;
 
+    static final String PREFIX_ARG = "-D";
+
+    static final String PREFIX_PROFILE = "-P"; //$NON-NLS-1$
+
     /**
      * goal
      */
@@ -54,6 +58,20 @@ public interface TalendMavenConstants {
     static final String GOAL_PACKAGE = "package";
 
     static final String GOAL_INSTALL = "install";
+
+    static final String PROFILE_INCLUDE_BINARIES = "include-binaries";
+
+    static final String PROFILE_INCLUDE_CONTEXTS = "include-contexts";
+
+    static final String PROFILE_INCLUDE_ITEMS = "include-items";
+
+    static final String PROFILE_INCLUDE_JAVA_SOURCES = "include-java-sources";
+
+    static final String PROFILE_INCLUDE_TEST_SOURCES = "include-test-sources";
+
+    static final String PROFILE_INCLUDE_LIBS = "include-libs";
+
+    static final String ARG_SKIPTESTS = "-DskipTests";
 
     /* same as the JavaUtils.JAVA_PROJECT_NAME */
     static final String PROJECT_NAME = ".Java";

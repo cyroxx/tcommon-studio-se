@@ -244,7 +244,7 @@
 		<profile>
 			<id>include-test-reports</id>
 			<properties>
-				<reports.dir>${basedir}/tests</reports.dir>
+				<reports.dir>${basedir}/target/surefire-reports</reports.dir>
 			</properties>
 		</profile>
 	</profiles>
