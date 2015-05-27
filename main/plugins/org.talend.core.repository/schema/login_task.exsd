@@ -54,7 +54,7 @@ This is mainly used for initialisation and should report any progress and respon
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  Class instanciated and called at the end of the login phase in the Studio. Class must implement &lt;b&gt;org.eclipse.jface.operation.IRunnableWithProgress&lt;/b&gt;
+                  Class instanciated and called at the end of the login phase in the Studio. Class must implement &lt;b&gt;org.talend.login.ILoginTask&lt;/b&gt;
                </documentation>
                <appinfo>
                   <meta.attribute kind="java" basedOn=":org.eclipse.jface.operation.IRunnableWithProgress"/>

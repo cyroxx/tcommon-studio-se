@@ -15,6 +15,7 @@ package org.talend.core.runtime.maven;
 import org.eclipse.core.runtime.Assert;
 import org.osgi.framework.Version;
 import org.talend.commons.exception.ExceptionHandler;
+import org.talend.commons.utils.VersionUtils;
 
 /**
  * DOC ggu class global comment. Detailled comment
@@ -70,8 +71,12 @@ public class MavenUrlHelper {
                     if ((verStr.startsWith("[") || verStr.startsWith("(")) && (verStr.endsWith(")") || verStr.endsWith("]"))) {
                         artifact.setVersion(verStr);
                     } else { // for number only, like 6.0.0
-                        Version version = new Version(verStr);
-                        artifact.setVersion(version.toString());
+                        // only call the new Version here to validate it's a valid version
+                        // if the version is not valid, it will throw an exception.                       
+                        new Version(verStr);
+                        // We keep original string here in case the version set was like :1.1
+                        // (since artifact won't resolve if it's with 1.1.0, value returned by the Version.toString)
+                        artifact.setVersion(verStr);
                     }
                 }
             }
@@ -116,7 +121,7 @@ public class MavenUrlHelper {
 
     /**
      * will build the mvn url with default groupId and version.
-     * "mvn:org.talend.libraries/<jarNameWithoutExtension>/6.0.0/<extension>"
+     * "mvn:org.talend.libraries/<jarNameWithoutExtension>/currentVersion/<extension>"
      */
     public static String generateMvnUrlForJarName(String jarName) {
         if (jarName != null && jarName.length() > 0) {
@@ -134,7 +139,11 @@ public class MavenUrlHelper {
                     type = jarName.substring(dotIndex + 1);
                 }
             }
-            return generateMvnUrl(MavenConstants.DEFAULT_LIB_GROUP_ID, artifactId, MavenConstants.DEFAULT_LIB_VERSION, type, null);
+            String currentVersion = VersionUtils.getTalendVersion();
+            if (currentVersion == null) {
+                currentVersion = MavenConstants.DEFAULT_VERSION;
+            }
+            return generateMvnUrl(MavenConstants.DEFAULT_LIB_GROUP_ID, artifactId, currentVersion, type, null);
         }
         return null;
     }

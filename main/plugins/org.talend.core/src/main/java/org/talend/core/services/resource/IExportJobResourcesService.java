@@ -26,6 +26,7 @@ public interface IExportJobResourcesService extends IExportScriptResourcesServic
      * Get the path of ant script template file.
      * 
      * @return
+     * @deprecated the Ant have been removed
      */
     public String getAntScriptFilePath();
 
@@ -33,6 +34,8 @@ public interface IExportJobResourcesService extends IExportScriptResourcesServic
      * DOC ycbai Comment method "getAntRequiredLibs".
      * 
      * @return urls of libs which ant requires.
+     * 
+     * @deprecated the Ant have been removed
      */
     public List<URL> getAntRequiredLibs();
 

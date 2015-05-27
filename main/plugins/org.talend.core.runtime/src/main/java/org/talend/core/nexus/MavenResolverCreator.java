@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.dom4j.io.XMLWriter;
 import org.ops4j.pax.url.mvn.MavenResolver;
 import org.ops4j.pax.url.mvn.MavenResolvers;
 import org.ops4j.pax.url.mvn.ServiceConstants;
+import org.talend.commons.exception.BusinessException;
 import org.talend.commons.exception.ExceptionHandler;
 
 /**
@@ -57,7 +59,30 @@ public class MavenResolverCreator {
         return MavenResolvers.createMavenResolver(properties, ServiceConstants.PID);
     }
 
-    public void setupMavenWithNexus(String url, String userName, String password) {
+    public MavenResolver getMavenResolver(NexusServerBean nexusServer) {
+        Hashtable<String, String> properties = new Hashtable<String, String>();
+        if (nexusServer != null) {
+            String nexusUrl = nexusServer.getServer();
+            if (nexusUrl.endsWith(NexusConstants.SLASH)) {
+                nexusUrl = nexusUrl.substring(0, nexusUrl.length() - 1);
+            }
+            String urlSeparator = "://";//$NON-NLS-1$
+            String[] split = nexusUrl.split(urlSeparator);
+            if (split.length != 2) {
+                ExceptionHandler.process(new BusinessException("Nexus url is not valid ,please contract the administrator"));
+                return null;
+            }
+            String newUrl = split[0]
+                    + ":" + nexusServer.getUserName() + ":" + nexusServer.getPassword() + "@//" + split[1] + NexusConstants.CONTENT_REPOSITORIES + nexusServer.getRepositoryId()//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+                    + "@id=" + nexusServer.getRepositoryId();//$NON-NLS-1$
+            properties.put("org.ops4j.pax.url.mvn.repositories", newUrl);//$NON-NLS-1$
+        }
+        return MavenResolvers.createMavenResolver(properties, ServiceConstants.PID);
+    }
+
+    public String setupMavenWithNexus(String url, String userName, String password, String repId) {
+        // return the repository id configured in the settings.xml
+        String repositoryIdToReture = repId;
         try {
             if (url == null || userName == null || password == null) {
                 throw new MavenSetupException("Please specifiy a nexus url to setup");
@@ -105,6 +130,7 @@ public class MavenResolverCreator {
                             if (urlElement != null) {
                                 String repUrl = urlElement.getText().trim();
                                 if (nexusUrl.equals(repUrl)) {
+                                    repositoryIdToReture = repositoryId;
                                     found = true;
                                     modified = false;
                                     break;
@@ -121,7 +147,8 @@ public class MavenResolverCreator {
                     }
                 } else {
                     // create profile
-                    createProfile(profiles, servers, activeProf, existingProIds, existingRepIds, url, userName, password);
+                    repositoryIdToReture = createProfile(profiles, servers, activeProf, existingProIds, existingRepIds, url,
+                            userName, password, repId);
                 }
             }
             if (modified) {
@@ -148,21 +175,23 @@ public class MavenResolverCreator {
         } catch (Exception e) {
             ExceptionHandler.process(e);
         }
+
+        return repositoryIdToReture;
     }
 
-    private void createProfile(Element profiles, Element servers, Element activeProfiles, Set<String> exsitProfIds,
-            Set<String> existRepIds, String server_url, String user, String password) {
+    private String createProfile(Element profiles, Element servers, Element activeProfiles, Set<String> exsitProfIds,
+            Set<String> existRepIds, String server_url, String user, String password, String repositoryId) {
         Element profile = profiles.addElement("profile");
         // profile id
         Element profIdElement = profile.addElement("id");
-        String profileId = getValidId(exsitProfIds, "talend_official_nexus");
+        String profileId = getValidId(exsitProfIds, repositoryId);
         profIdElement.setText(profileId);
 
         Element repositories = profile.addElement("repositories");
         Element repository = repositories.addElement("repository");
         // repository id
         Element repIdElement = repository.addElement("id");
-        String repId = getValidId(existRepIds, "talend_official_nexus");
+        String repId = getValidId(existRepIds, repositoryId);
         repIdElement.setText(repId);
         // url
         Element urlElement = repository.addElement("url");
@@ -187,6 +216,8 @@ public class MavenResolverCreator {
         serverUser.setText(user);
         Element serverPass = server.addElement("password");
         serverPass.setText(password);
+
+        return repId;
     }
 
     private String getValidId(Set<String> existingId, String id) {

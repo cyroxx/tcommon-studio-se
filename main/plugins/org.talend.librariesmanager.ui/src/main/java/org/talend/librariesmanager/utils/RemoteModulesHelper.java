@@ -15,8 +15,6 @@ package org.talend.librariesmanager.utils;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,15 +29,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.dom4j.Document;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
@@ -50,19 +44,19 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.ops4j.pax.url.mvn.MavenResolver;
-import org.osgi.framework.Version;
 import org.talend.commons.CommonsPlugin;
 import org.talend.commons.exception.ExceptionHandler;
-import org.talend.commons.utils.VersionUtils;
 import org.talend.commons.utils.network.NetworkUtil;
 import org.talend.core.model.general.ModuleNeeded;
 import org.talend.core.model.general.ModuleToInstall;
 import org.talend.core.nexus.MavenResolverCreator;
+import org.talend.core.nexus.NexusArtifact;
+import org.talend.core.nexus.NexusServerBean;
+import org.talend.core.nexus.NexusServerManager;
 import org.talend.core.runtime.maven.MavenConstants;
 import org.talend.core.runtime.maven.MavenUrlHelper;
 import org.talend.librariesmanager.ui.dialogs.IModulesListener;
 import org.talend.librariesmanager.ui.i18n.Messages;
-import org.talend.utils.io.FilesUtils;
 
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
@@ -73,6 +67,8 @@ import us.monoid.json.JSONObject;
  * 
  */
 public class RemoteModulesHelper {
+
+    private static final String SLASH = "/";//$NON-NLS-1$ 
 
     // TODO to be removed after nexus server available
     public static final boolean nexus_available = false;
@@ -133,7 +129,7 @@ public class RemoteModulesHelper {
                 monitor.beginTask(Messages.getString("RemoteModulesHelper.fetch.module.info"), size * 10 + 10);//$NON-NLS-1$
                 // if the network is not valid, all jars are not available.
                 boolean networkValid = false;
-                if (cache == null) {
+                if (cache == null || recheckCache) {
                     networkValid = NetworkUtil.isNetworkValid();
                     if (!networkValid) {
                         unavailableModules.addAll(Arrays.asList(jars));
@@ -144,84 +140,41 @@ public class RemoteModulesHelper {
                         }// else already warned so do nothing
                     }
                 }
-                if (networkValid && (cache == null || recheckCache)) {
-                    // only check from the index one time after start studio
+                if (networkValid) {
                     try {
-                        // TODO need to remove the index and use pluged lucene search latter
-                        // TODO need modify latter , only parse the index of 6.0.0 by default
-                        // mvn:org.talend.libraries_index/libraries_index/6.0.0/zip
                         cache = new HashMap<String, ModuleToInstall>();
-                        File resolve = mvnResolver.resolve(MavenUrlHelper.generateMvnUrl(MavenConstants.INDEX_GROUP_ID,
-                                MavenConstants.INDEX_ARTIFACT_ID, MavenConstants.DEFAULT_VERSION, MavenConstants.INDEX_PACKAGE,
-                                null));
-                        // .m2/repository/org/talend/libraries_index/libraries_index/6.0.0/unziped
-                        String targetFolder = resolve.getParent() + "/unziped/";
-                        FilesUtils.unzip(resolve.getAbsolutePath(), targetFolder);
-
-                        final String currentVersion = VersionUtils.getTalendVersion();
-
-                        File unziped = new File(targetFolder);
-                        File[] validIndexFiles = unziped.listFiles(new FileFilter() {
-
-                            @Override
-                            public boolean accept(File pathname) {
-                                String name = pathname.getName();
-                                int startIndex = name.lastIndexOf("_");
-                                int endIndex = name.lastIndexOf(".");
-                                if (startIndex != -1 && endIndex != -1) {
-                                    String fileVersion = name.substring(startIndex + 1, endIndex);
-                                    Version current = new Version(currentVersion);
-                                    Version fVersion = new Version(fileVersion);
-                                    if (current.getMajor() >= fVersion.getMajor() && current.getMicro() >= fVersion.getMicro()
-                                            && current.getMinor() >= fVersion.getMinor()) {
-                                        return true;
-                                    }
-                                }
-
-                                return false;
+                        // TODO , not sure about the version , don't add version in search condition for now
+                        List<NexusArtifact> searchResults = NexusServerManager.search(nexusServer.getServer(),
+                                nexusServer.getUserName(), nexusServer.getPassword(), nexusServer.getRepositoryId(),
+                                MavenConstants.DEFAULT_LIB_GROUP_ID, null);
+                        monitor.worked(10);
+                        for (NexusArtifact artifact : searchResults) {
+                            String artifactId = artifact.getArtifactId();
+                            String packageName = artifact.getType();
+                            String version = artifact.getVersion();
+                            String description = artifact.getDescription();
+                            String url_description = artifact.getUrl();
+                            String download_url = artifact.getUrl();
+                            String license = artifact.getLicense();
+                            String license_url = artifact.getLicenseUrl();
+                            ModuleToInstall m = new ModuleToInstall();
+                            m.setName(artifactId + "." + packageName);
+                            String mvnUri = MavenUrlHelper.generateMvnUrl(artifact.getGroupId(), artifactId, version,
+                                    packageName, artifact.getClassifier());
+                            m.setMavenUri(mvnUri);
+                            m.setLicenseType(license);
+                            m.setLicenseUrl(license_url);
+                            m.setDescription(description);
+                            m.setUrl_description(url_description);
+                            if (download_url == null || "".equals(download_url) || "null".equals(download_url)) {//$NON-NLS-1$
+                                m.setUrl_download(null);
+                            } else {
+                                m.setUrl_download(download_url);
                             }
-                        });
-                        for (File indexFile : validIndexFiles) {
-                            FileInputStream openStream = new FileInputStream(indexFile);
-                            Document document = new SAXReader(false).read(openStream);
-                            Element root = document.getRootElement();
-                            Element group = root.element("Group");
-                            String groupId = group.attributeValue("id");
-                            Iterator iter = group.elementIterator("Module");
-                            while (iter.hasNext()) {
-                                Element element = (Element) iter.next();
-                                String artifactId = element.attributeValue("artifact_Id");
-                                String packageName = element.attributeValue("package");
-                                String version = element.attributeValue("version");
-                                String description = element.attributeValue("description");
-                                String url_description = element.attributeValue("url");
-                                String download_url = element.attributeValue("download_url");
-                                String license = element.attributeValue("license");
-                                String license_url = element.attributeValue("license_url");
-                                ModuleToInstall m = new ModuleToInstall();
-                                //
-                                m.setName(artifactId + "." + packageName);
-                                m.setPackageName(packageName);
-                                m.setGroupId(groupId);
-                                m.setArtifactId(artifactId);
-                                m.setVersion(version);
-                                m.setLicenseType(license);
-                                m.setLicenseUrl(license_url);
-                                m.setDescription(description);
-                                m.setUrl_description(url_description);
-                                if (download_url == null || "".equals(download_url) || "null".equals(download_url)) {//$NON-NLS-1$
-                                    m.setUrl_download(null);
-                                } else {
-                                    m.setUrl_download(download_url);
-                                }
-                                setContext(m, contextMap);
+                            setContext(m, contextMap);
 
-                                cache.put(m.getMavenUrl(), m);
-                            }
-                            if (monitor.isCanceled()) {
-                                recheckCache = true;
-                                return;
-                            }
+                            cache.put(m.getMavenUri(), m);
+
                             monitor.worked(10);
                         }
 
@@ -233,7 +186,7 @@ public class RemoteModulesHelper {
 
                 for (String name : jars) {
                     String artifact2Check = name;
-                    String key = getDefaulMavenUrl(artifact2Check);
+                    String key = getMavenUri(artifact2Check);
                     ModuleToInstall moduleToInstall = cache.get(key);
                     if (moduleToInstall != null) {
                         toInstall.add(moduleToInstall);
@@ -358,7 +311,7 @@ public class RemoteModulesHelper {
         }
     }
 
-    private String getDefaulMavenUrl(String jarOrUrl) {
+    private String getMavenUri(String jarOrUrl) {
         if (jarOrUrl != null) {
             if (MavenUrlHelper.isMvnUrl(jarOrUrl)) {
                 return jarOrUrl;
@@ -480,12 +433,15 @@ public class RemoteModulesHelper {
 
     private MavenResolver mvnResolver;
 
+    NexusServerBean nexusServer;
+
     private boolean recheckCache = false;
 
     private Map<String, ModuleToInstall> cache;
 
     private RemoteModulesHelper() {
-        mvnResolver = MavenResolverCreator.getInstance().getMavenResolver(null);
+        nexusServer = NexusServerManager.getLibrariesNexusServer(true);
+        mvnResolver = MavenResolverCreator.getInstance().getMavenResolver(nexusServer);
     }
 
     public synchronized static RemoteModulesHelper getInstance() {
@@ -821,5 +777,14 @@ public class RemoteModulesHelper {
             }
         }
         return null;
+    }
+
+    /**
+     * Getter for mvnResolver.
+     * 
+     * @return the mvnResolver
+     */
+    public MavenResolver getMvnResolver() {
+        return this.mvnResolver;
     }
 }

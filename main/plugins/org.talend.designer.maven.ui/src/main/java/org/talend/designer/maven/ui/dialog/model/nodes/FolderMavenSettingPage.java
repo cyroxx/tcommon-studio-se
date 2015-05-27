@@ -10,7 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.designer.maven.ui.projectsetting;
+package org.talend.designer.maven.ui.dialog.model.nodes;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -47,8 +47,8 @@ import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.exception.LoginException;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.core.runtime.CoreRuntimePlugin;
-import org.talend.core.runtime.preference.AbstractProjectSettingPage;
-import org.talend.core.runtime.preference.ProjectPreferenceManager;
+import org.talend.core.runtime.projectsetting.AbstractProjectSettingPage;
+import org.talend.core.runtime.projectsetting.ProjectPreferenceManager;
 import org.talend.designer.maven.model.TalendMavenConstants;
 import org.talend.designer.maven.template.IProjectSettingPreferenceConstants;
 import org.talend.designer.maven.ui.DesignerMavenUiPlugin;
@@ -63,7 +63,7 @@ import org.talend.repository.model.RepositoryNode;
 /**
  * DOC ggu class global comment. Detailled comment
  */
-public class FolderMavenSettingPreferencePage extends AbstractProjectSettingPage {
+public class FolderMavenSettingPage extends AbstractProjectSettingPage {
 
     private RepositoryNode node;
 
@@ -87,7 +87,7 @@ public class FolderMavenSettingPreferencePage extends AbstractProjectSettingPage
         }
     };
 
-    public FolderMavenSettingPreferencePage(RepositoryNode node) {
+    public FolderMavenSettingPage(RepositoryNode node) {
         super();
         this.node = node;
 
@@ -126,11 +126,6 @@ public class FolderMavenSettingPreferencePage extends AbstractProjectSettingPage
     }
 
     @Override
-    protected String getPreferenceName() {
-        return DesignerMavenUiPlugin.PLUGIN_ID;
-    }
-
-    @Override
     protected void createFieldEditors() {
 
         Composite fieldEditorParent = getFieldEditorParent();
@@ -143,7 +138,7 @@ public class FolderMavenSettingPreferencePage extends AbstractProjectSettingPage
 
         createBtn = new Button(fieldEditorParent, SWT.PUSH);
         createBtn.setLayoutData(new GridData());
-        createBtn.setText(Messages.getString("FolderMavenSettingPreferencePage_CreateButtonText"));//$NON-NLS-1$
+        createBtn.setText(Messages.getString("FolderMavenSettingPage_CreateButtonText"));//$NON-NLS-1$
         createBtn.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -155,7 +150,7 @@ public class FolderMavenSettingPreferencePage extends AbstractProjectSettingPage
 
         deleteBtn = new Button(fieldEditorParent, SWT.PUSH);
         deleteBtn.setLayoutData(new GridData());
-        deleteBtn.setText(Messages.getString("FolderMavenSettingPreferencePage_DeleteButtonText"));//$NON-NLS-1$
+        deleteBtn.setText(Messages.getString("FolderMavenSettingPage_DeleteButtonText"));//$NON-NLS-1$
         deleteBtn.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -169,8 +164,7 @@ public class FolderMavenSettingPreferencePage extends AbstractProjectSettingPage
     }
 
     private Composite createPathComposite(Composite parent) {
-        Composite composite = createLabelComposite(parent,
-                Messages.getString("FolderMavenSettingPreferencePage_CreatingMavenSettingPath")); //$NON-NLS-1$
+        Composite composite = createLabelComposite(parent, Messages.getString("FolderMavenSettingPage_CreatingMavenSettingPath")); //$NON-NLS-1$
 
         pathTxt = new Text(composite, SWT.READ_ONLY);
         pathTxt.setBackground(composite.getBackground());
@@ -180,8 +174,7 @@ public class FolderMavenSettingPreferencePage extends AbstractProjectSettingPage
     }
 
     private Composite createNoteComposite(Composite parent) {
-        Composite composite = createLabelComposite(parent,
-                Messages.getString("FolderMavenSettingPreferencePage_CreatingMavenSettingNote")); //$NON-NLS-1$
+        Composite composite = createLabelComposite(parent, Messages.getString("FolderMavenSettingPage_CreatingMavenSettingNote")); //$NON-NLS-1$
 
         noteLink = new Link(composite, SWT.WRAP);
         noteLink.setFont(parent.getFont());
@@ -198,18 +191,18 @@ public class FolderMavenSettingPreferencePage extends AbstractProjectSettingPage
         if (created) {
             String pomLinkStr = buildLink(TalendMavenConstants.POM_FILE_NAME);
             String assemblyLinkStr = buildLink(TalendMavenConstants.ASSEMBLY_FILE_NAME);
-            messages.append(Messages.getString("FolderMavenSettingPreferencePage_ExistedMavenSettingMessage",//$NON-NLS-1$
+            messages.append(Messages.getString("FolderMavenSettingPage_ExistedMavenSettingMessage",//$NON-NLS-1$
                     pomLinkStr, assemblyLinkStr));
         } else {
-            messages.append(Messages.getString("FolderMavenSettingPreferencePage_CreatingMavenSettingMessage", //$NON-NLS-1$
+            messages.append(Messages.getString("FolderMavenSettingPage_CreatingMavenSettingMessage", //$NON-NLS-1$
                     TalendMavenConstants.POM_FILE_NAME, TalendMavenConstants.ASSEMBLY_FILE_NAME));
             messages.append('\n');
             messages.append('\n');
 
-            messages.append(Messages.getString("FolderMavenSettingPreferencePage_CreatingMavenSettingNote"));//$NON-NLS-1$
+            messages.append(Messages.getString("FolderMavenSettingPage_CreatingMavenSettingNote"));//$NON-NLS-1$
             messages.append(' ');
             String mvnProjectSettingLinkStr = "<a href=\"" + ID_MAVEN_PROJECT_SETTING + "\">Maven</a>";//$NON-NLS-1$ //$NON-NLS-2$
-            messages.append(Messages.getString("FolderMavenSettingPreferencePage_CreatingMavenSettingNoteMessage", //$NON-NLS-1$
+            messages.append(Messages.getString("FolderMavenSettingPage_CreatingMavenSettingNoteMessage", //$NON-NLS-1$
                     mvnProjectSettingLinkStr));
         }
         messages.append('\n');
@@ -229,7 +222,7 @@ public class FolderMavenSettingPreferencePage extends AbstractProjectSettingPage
 
         // // note
         //        String mvnProjectSettingLinkStr = "<a href=\"" + ID_MAVEN_PROJECT_SETTING + "\">Maven</a>";//$NON-NLS-1$ //$NON-NLS-2$
-        //        noteLink.setText(Messages.getString("FolderMavenSettingPreferencePage_CreatingMavenSettingNoteMessage", //$NON-NLS-1$
+        //        noteLink.setText(Messages.getString("FolderMavenSettingPage_CreatingMavenSettingNoteMessage", //$NON-NLS-1$
         // mvnProjectSettingLinkStr));
         //
         // GridData noteCompGridData = (GridData) noteComposite.getLayoutData();
@@ -295,7 +288,7 @@ public class FolderMavenSettingPreferencePage extends AbstractProjectSettingPage
             @Override
             protected void run() throws LoginException, PersistenceException {
 
-                ProjectPreferenceManager projectPreferenceManager = MavenProjectSettingPreferenceManager.getInstance()
+                ProjectPreferenceManager projectPreferenceManager = DesignerMavenUiPlugin.getDefault()
                         .getProjectPreferenceManager();
 
                 final IFolder nodeFolder = DesignerMavenUiHelper.getNodeFolder(getNode());
@@ -349,21 +342,21 @@ public class FolderMavenSettingPreferencePage extends AbstractProjectSettingPage
                     }
 
                     //
-                    final Shell shell = FolderMavenSettingPreferencePage.this.getShell();
+                    final Shell shell = FolderMavenSettingPage.this.getShell();
                     shell.getDisplay().syncExec(new Runnable() {
 
                         @Override
                         public void run() {
                             MessageDialog.openError(shell,
-                                    Messages.getString("FolderMavenSettingPreferencePage_CreatingMavenSettingErrorTitle"), //$NON-NLS-1$
-                                    Messages.getString("FolderMavenSettingPreferencePage_CreatingMavenSettingErrorMessage") //$NON-NLS-1$
+                                    Messages.getString("FolderMavenSettingPage_CreatingMavenSettingErrorTitle"), //$NON-NLS-1$
+                                    Messages.getString("FolderMavenSettingPage_CreatingMavenSettingErrorMessage") //$NON-NLS-1$
                                             + '\n' + nodeFolder.getProjectRelativePath().toString());
 
                         }
                     });
                 }
                 // update the tree view to add the new nodes
-                final Shell shell = FolderMavenSettingPreferencePage.this.getShell();
+                final Shell shell = FolderMavenSettingPage.this.getShell();
                 shell.getDisplay().syncExec(new Runnable() {
 
                     @Override
@@ -413,7 +406,7 @@ public class FolderMavenSettingPreferencePage extends AbstractProjectSettingPage
                     assemblyFile.delete(true, null);
 
                     // update the tree view to add the new nodes
-                    final Shell shell = FolderMavenSettingPreferencePage.this.getShell();
+                    final Shell shell = FolderMavenSettingPage.this.getShell();
                     shell.getDisplay().syncExec(new Runnable() {
 
                         @Override
@@ -450,7 +443,7 @@ public class FolderMavenSettingPreferencePage extends AbstractProjectSettingPage
 
             @Override
             public void run(IProgressMonitor monitor) throws CoreException {
-                final Shell shell = FolderMavenSettingPreferencePage.this.getShell();
+                final Shell shell = FolderMavenSettingPage.this.getShell();
                 shell.getDisplay().syncExec(new Runnable() {
 
                     @Override

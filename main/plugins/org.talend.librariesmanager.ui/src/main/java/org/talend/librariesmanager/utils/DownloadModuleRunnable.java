@@ -16,8 +16,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -30,6 +32,8 @@ import org.eclipse.ui.PlatformUI;
 import org.ops4j.pax.url.mvn.Handler;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.io.FilesUtils;
+import org.talend.core.GlobalServiceRegister;
+import org.talend.core.ILibraryManagerService;
 import org.talend.core.download.DownloadHelperWithProgress;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.model.general.ModuleToInstall;
@@ -78,13 +82,10 @@ abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
                 Messages.getString("ExternalModulesInstallDialog.downloading2"), toDownload.size() + 1); //$NON-NLS-1$
 
         if (RemoteModulesHelper.nexus_available) {
-            final List<URL> downloadOk = new ArrayList<URL>();
+            Map<String, String> customUriToAdd = new HashMap<String, String>();
             for (final ModuleToInstall module : toDownload) {
                 if (!monitor.isCanceled()) {
                     monitor.subTask(module.getName());
-                    // TODO change the download target path
-                    String librariesPath = LibrariesManagerUtils.getLibrariesPath(ECodeLanguage.JAVA);
-                    File target = new File(librariesPath);
                     boolean accepted;
                     if (module.getUrl_download() != null && !"".equals(module.getUrl_download())) { //$NON-NLS-1$
                         try {
@@ -99,20 +100,9 @@ abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
                             if (monitor.isCanceled()) {
                                 return;
                             }
-                            File destination = new File(target.toString() + File.separator + module.getName());
-                            File destinationTemp = target.createTempFile(destination.getName(), ".jar");
                             NexusDownloadHelperWithProgress downloader = new NexusDownloadHelperWithProgress();
-                            String mvnProtecal = module.getMavenUrl() + "/" + module.getPackageName();
-                            downloader.download(new URL(null, mvnProtecal, new Handler()), null, subMonitor.newChild(1));
-                            // if the jar had download complete , will copy it from system temp path to "lib/java"
-                            if (!monitor.isCanceled()) {
-                                FilesUtils.copyFile(destinationTemp, destination);
-                                downloadOk.add(destination.toURI().toURL());
-                                installedModules.add(module.getName());
-                            }
-                            if (destinationTemp.exists()) {
-                                destinationTemp.delete();
-                            }
+                            downloader.download(new URL(null, module.getMavenUri(), new Handler()), null, subMonitor.newChild(1));
+                            customUriToAdd.put(module.getName(), module.getMavenUri());
                         } catch (Exception e) {
                             downloadFailed.add(module.getName());
                             ExceptionHandler.process(e);
@@ -125,7 +115,11 @@ abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
                 }
             }
             // reset the module install status
-            if (!downloadOk.isEmpty()) {
+            if (!customUriToAdd.isEmpty()) {
+                ILibraryManagerService libraryManagerService = (ILibraryManagerService) GlobalServiceRegister.getDefault()
+                        .getService(ILibraryManagerService.class);
+                libraryManagerService.deployMavenIndex(customUriToAdd, monitor);
+                libraryManagerService.forceListUpdate();
                 LibManagerUiPlugin.getDefault().getLibrariesService().resetModulesNeeded();
             }
             subMonitor.worked(1);

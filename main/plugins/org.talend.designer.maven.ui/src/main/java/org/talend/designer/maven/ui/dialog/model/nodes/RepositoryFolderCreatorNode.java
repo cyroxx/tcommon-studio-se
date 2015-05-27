@@ -14,7 +14,6 @@ package org.talend.designer.maven.ui.dialog.model.nodes;
 
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.talend.designer.maven.ui.projectsetting.FolderMavenSettingPreferencePage;
 import org.talend.repository.model.RepositoryNode;
 
 /**
@@ -28,6 +27,6 @@ public class RepositoryFolderCreatorNode extends RepositoryPreferenceNode {
 
     @Override
     protected PreferencePage createPreferencePage() {
-        return new FolderMavenSettingPreferencePage(this.getNode());
+        return new FolderMavenSettingPage(this.getNode());
     }
 }

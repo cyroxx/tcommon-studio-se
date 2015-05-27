@@ -4,30 +4,40 @@
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
-            class="org.talend.designer.maven.ui.projectsetting.MavenScriptsProjectSettingInitializer">
+            class="org.talend.designer.maven.ui.projectsetting.initializer.MavenScriptsProjectSettingInitializer">
       </initializer>
    </extension>
    <extension
          point="org.talend.repository.projectsetting_page">
       <page
-            class="org.talend.designer.maven.ui.projectsetting.MainMavenProjectPreferencePage"
+            class="org.talend.designer.maven.ui.projectsetting.BuildProjectSettingPage"
+            description="Build settings"
+            id="projectsetting.Build"
+            title="%ProjectSettingPage.Build">
+      </page>
+   </extension>
+   <extension
+         point="org.talend.repository.projectsetting_page">
+      <page
+            category="projectsetting.Build"
+            class="org.talend.designer.maven.ui.projectsetting.MavenProjectSettingPage"
             description="Maven Settings"
             id="projectsetting.Maven"
-            title="%preferencePage.Maven">
+            title="%ProjectSettingPage.Maven">
       </page>
       <page
             category="projectsetting.Maven"
-            class="org.talend.designer.maven.ui.projectsetting.job.AutonomousJobProjectPreferencePage"
+            class="org.talend.designer.maven.ui.projectsetting.job.AutonomousJobProjectSettingPage"
             description="Maven settings for Autonomous Job"
             id="projectsetting.AutonomousJob"
-            title="%preferencePage.AutonomousJob">
+            title="%ProjectSettingPage.AutonomousJob">
       </page>
       <page
             category="projectsetting.AutonomousJob"
-            class="org.talend.designer.maven.ui.projectsetting.job.AutonomousJobAssemblyProjectPreferencePage"
+            class="org.talend.designer.maven.ui.projectsetting.job.AutonomousJobAssemblyProjectSettingPage"
             description="Assembly settings for Autonomous Job"
             id="projectsetting.AutonomousJobAssembly"
-            title="%preferencePage.Assembly">
+            title="%ProjectSettingPage.Assembly">
       </page>
    </extension>
    <extension

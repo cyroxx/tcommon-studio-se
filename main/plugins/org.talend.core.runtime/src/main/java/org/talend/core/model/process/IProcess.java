@@ -15,6 +15,7 @@ package org.talend.core.model.process;
 import java.util.List;
 import java.util.Set;
 
+import org.talend.core.model.general.ModuleNeeded;
 import org.talend.core.model.metadata.IMetadataTable;
 
 /**
@@ -92,6 +93,8 @@ public interface IProcess extends IElement {
     public IConnection[] getAllConnections(String filter);
 
     public Set<String> getNeededLibraries(boolean withChildrens);
+
+    public Set<ModuleNeeded> getNeededModules(boolean withChildrens);
 
     public Set<String> getNeededRoutines();
 

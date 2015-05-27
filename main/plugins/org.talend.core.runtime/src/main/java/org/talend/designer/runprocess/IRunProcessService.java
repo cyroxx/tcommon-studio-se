@@ -30,6 +30,7 @@ import org.talend.core.model.process.IProcess;
 import org.talend.core.model.process.IProcess2;
 import org.talend.core.model.properties.Property;
 import org.talend.core.runtime.process.ITalendProcessJavaProject;
+import org.talend.core.runtime.projectsetting.ProjectPreferenceManager;
 
 /**
  * DOC qian class global comment. Detailled comment <br/>
@@ -171,5 +172,7 @@ public interface IRunProcessService extends IService {
     public void buildJavaProject();
 
     ITalendProcessJavaProject getTalendProcessJavaProject();
+
+    ProjectPreferenceManager getProjectPreferenceManager();
 
 }

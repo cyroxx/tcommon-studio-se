@@ -805,6 +805,10 @@ public final class FilesUtils {
         }
     }
 
+    /**
+     * 
+     * Delete the sub folders, if true, will delete current folder also.
+     */
     public static void deleteFolder(File file, boolean withCurrentFolder) {
         if (file.exists() && file.isDirectory()) {
             File files[] = file.listFiles();
@@ -815,5 +819,35 @@ public final class FilesUtils {
                 file.delete();
             }
         }
+    }
+
+    /**
+     * check multi-files in same folder.
+     * 
+     * The base file must be existed first, then, will check the files in this folder (if base file is directory) or
+     * with same folder (if the base file is file).
+     *
+     */
+    public static boolean allInSameFolder(File baseFile, String... fileNames) {
+        if (baseFile != null && baseFile.exists()) {
+            if (fileNames == null || fileNames.length == 0) { // only check base file
+                return true;
+            }
+            File baseFoler = baseFile;
+            if (baseFile.isFile()) {
+                baseFoler = baseFile.getParentFile();
+            }
+
+            for (String fileName : fileNames) {
+                if (fileName != null) {
+                    File subFile = new File(baseFoler, fileName);
+                    if (!subFile.exists()) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
     }
 }

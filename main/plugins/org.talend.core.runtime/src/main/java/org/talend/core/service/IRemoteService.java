@@ -30,4 +30,6 @@ public interface IRemoteService extends IService {
     public JSONObject getUpdateRepositoryUrl(String user, String password, String url) throws PersistenceException,
             LoginException;
 
+    public JSONObject getLibLocation(String user, String password, String url) throws PersistenceException, LoginException;
+
 }

@@ -8,9 +8,10 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
 import org.talend.core.GlobalServiceRegister;
+import org.talend.login.AbstractLoginTask;
 import org.talend.repository.model.IRepositoryService;
 
-public class ReadOnlyProjectConfirm implements IRunnableWithProgress {
+public class ReadOnlyProjectConfirm extends AbstractLoginTask implements IRunnableWithProgress {
 
     private static Logger log = Logger.getLogger(ReadOnlyProjectConfirm.class);
 

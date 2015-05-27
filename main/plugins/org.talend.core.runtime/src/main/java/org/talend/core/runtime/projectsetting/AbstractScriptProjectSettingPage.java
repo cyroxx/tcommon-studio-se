@@ -10,9 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.designer.maven.ui.projectsetting;
-
-import java.io.IOException;
+package org.talend.core.runtime.projectsetting;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -21,14 +19,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.talend.core.runtime.CoreRuntimePlugin;
-import org.talend.core.runtime.preference.AbstractProjectSettingPage;
-import org.talend.designer.maven.ui.DesignerMavenUiPlugin;
 import org.talend.repository.model.IProxyRepositoryFactory;
 
 /**
  * DOC ggu class global comment. Detailled comment
  */
-public abstract class AbstractMavenScriptProjectSettingPage extends AbstractProjectSettingPage {
+public abstract class AbstractScriptProjectSettingPage extends AbstractProjectSettingPage {
 
     private String headerMessage;
 
@@ -38,7 +34,7 @@ public abstract class AbstractMavenScriptProjectSettingPage extends AbstractProj
 
     private boolean readonly;
 
-    public AbstractMavenScriptProjectSettingPage() {
+    public AbstractScriptProjectSettingPage() {
         super();
 
         IProxyRepositoryFactory factory = CoreRuntimePlugin.getInstance().getProxyRepositoryFactory();
@@ -54,35 +50,6 @@ public abstract class AbstractMavenScriptProjectSettingPage extends AbstractProj
         this.readonly = readonly;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.core.runtime.preference.AbstractProjectSettingPage#initStore()
-     */
-    @Override
-    protected void initStore() {
-        this.setPreferenceStore(MavenProjectSettingPreferenceManager.getInstance().getProjectPreferenceManager()
-                .getPreferenceStore());
-    }
-
-    public void load() throws IOException {
-        // nothing to do
-    }
-
-    public void save() throws IOException {
-        // nothing to do
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.core.runtime.preference.AbstractProjectSettingPage#getPreferenceName()
-     */
-    @Override
-    protected String getPreferenceName() {
-        return DesignerMavenUiPlugin.PLUGIN_ID;
-    }
-
     protected String getHeaderMessages() {
         if (headerMessage == null) {
             return getHeadTitle();
@@ -94,7 +61,7 @@ public abstract class AbstractMavenScriptProjectSettingPage extends AbstractProj
         this.headerMessage = headerMessage;
     }
 
-    public abstract String getPreferenceKey();
+    protected abstract String getPreferenceKey();
 
     protected abstract String getHeadTitle();
 
@@ -128,11 +95,6 @@ public abstract class AbstractMavenScriptProjectSettingPage extends AbstractProj
 
     protected String getScriptContent() {
         return getPreferenceStore().getString(getPreferenceKey());
-    }
-
-    @Override
-    protected void createFieldEditors() {
-        //
     }
 
     /*

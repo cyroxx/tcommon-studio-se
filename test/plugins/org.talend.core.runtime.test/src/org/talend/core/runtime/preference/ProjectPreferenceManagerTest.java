@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.utils.workbench.resources.ResourceUtils;
 import org.talend.core.model.general.Project;
+import org.talend.core.runtime.projectsetting.ProjectPreferenceManager;
 import org.talend.repository.ProjectManager;
 
 /**

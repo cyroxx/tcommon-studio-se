@@ -10,6 +10,8 @@
  ******************************************************************************/
 package routines.system.api;
 
+import org.dom4j.DocumentException;
+
 
 /**
  * A JOB interface for Jobs that are using tMDMTrigger Components

@@ -13,8 +13,10 @@
 package org.talend.designer.maven.tools;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Repository;
 import org.eclipse.core.resources.IFile;
@@ -182,10 +184,20 @@ public class ProjectPomManager {
             }
             Model jobModel = MODEL_MANAGER.readMavenModel(basePomFile);
 
-            // fresh is false, make sure all jobs can be compile ok
-            ProcessorDependenciesManager.updateDependencies(monitor, projectModel, jobModel.getDependencies(), false);
+            List<Dependency> withoutChildrenJobDependencies = new ArrayList<Dependency>(jobModel.getDependencies());
+            // remove the children job's dependencies
+            Iterator<Dependency> iterator = withoutChildrenJobDependencies.iterator();
+            while (iterator.hasNext()) {
+                Dependency d = iterator.next();
+                if (d.getGroupId().equals(TalendMavenConstants.DEFAULT_JOB_GROUP_ID)) {
+                    iterator.remove();
+                }
+            }
 
-        } else {
+            // fresh is false, make sure all jobs can be compile ok
+            ProcessorDependenciesManager.updateDependencies(monitor, projectModel, withoutChildrenJobDependencies, false);
+
+        } else {// try get the dependencies from processor directly.
             ProcessorDependenciesManager processorDependenciesManager = new ProcessorDependenciesManager(processor);
             processorDependenciesManager.updateDependencies(monitor, projectModel);
         }

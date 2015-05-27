@@ -27,6 +27,7 @@ import org.talend.commons.exception.ExceptionHandler;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.runtime.services.IDesignerMavenUIService;
 import org.talend.designer.maven.DesignerMavenPlugin;
+import org.talend.designer.maven.model.TalendMavenConstants;
 
 /**
  * created by ggu on 5 Feb 2015 Detailled comment
@@ -79,7 +80,8 @@ public class MavenTemplateManager {
             try {
                 String jobTemplateFromProjectSettingContents = mavenUiService.getProjectSettingPreferenceValue(templateKey);
                 if (jobTemplateFromProjectSettingContents != null && jobTemplateFromProjectSettingContents.length() > 0) {
-                    InputStream is = new ByteArrayInputStream(jobTemplateFromProjectSettingContents.getBytes("UTF-8"));
+                    InputStream is = new ByteArrayInputStream(
+                            jobTemplateFromProjectSettingContents.getBytes(TalendMavenConstants.DEFAULT_ENCODING));
                     return is;
                 }
             } catch (IOException e) {

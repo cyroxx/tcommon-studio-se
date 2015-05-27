@@ -46,9 +46,8 @@ public interface ILibraryManagerService extends IService {
     public void deploy(List<ModuleNeeded> modules, IProgressMonitor... monitorWrap);
 
     /**
-     * DOC ycbai Comment method "deploy".
      * 
-     * Deploy jar file to OBR.
+     * DOC wchen Comment method "deploy". deploy jars not exist in maven repository(nexus if configured in TAC)
      * 
      * @param jarFileUri
      * @param monitorWrap
@@ -56,6 +55,26 @@ public interface ILibraryManagerService extends IService {
     public void deploy(URI jarFileUri, IProgressMonitor... monitorWrap);
 
     public void deploy(Collection<URI> jarFileUris, IProgressMonitor... monitorWrap);
+
+    /**
+     * 
+     * DOC wchen Comment method "deploy".Deploy moduleName:platformUri index to LibrariesIndex.xml
+     * 
+     * @param libsToRelativePath
+     * @param monitorWrap
+     */
+    public void deploy(Map<String, String> libsToRelativePath, IProgressMonitor... monitorWrap);
+
+    /**
+     * 
+     * DOC Talend Comment method "deployMavenIndex".Deploy moduleName:mavenUri index to MavenUriIndex.xml
+     * 
+     * @param libsToMavenUri
+     * @param monitorWrap
+     */
+    public void deployMavenIndex(Map<String, String> libsToMavenUri, IProgressMonitor... monitorWrap);
+
+    public void deployComponentsLibs(IProgressMonitor... monitorWrap);
 
     /**
      * DOC ycbai Comment method "retrieve".
@@ -104,8 +123,6 @@ public interface ILibraryManagerService extends IService {
 
     @Deprecated
     public Set<String> list(boolean withComponent, IProgressMonitor... monitorWrap);
-
-    public void deploy(Map<String, String> libsToRelativePath, IProgressMonitor... monitorWrap);
 
     public boolean checkJarInstalledFromPlatform(String uriPath);
 

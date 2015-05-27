@@ -92,9 +92,6 @@ public class CorePreferenceInitializer extends AbstractPreferenceInitializer {
         CorePlugin.getDefault().getPreferenceStore().setDefault(ITalendCorePrefConstants.DOC_GENERATESOURCECODE, false);
         // CorePlugin.getDefault().getPreferenceStore().setDefault(ITalendCorePrefConstants.DOC_HIDEPASSWORDS, true);
 
-        CorePlugin.getDefault().getPreferenceStore()
-                .setDefault(ITalendCorePrefConstants.COMMAND_STR, ITalendCorePrefConstants.DEFAULT_COMMAND_STR);
-
         //
         CorePlugin.getDefault().getPreferenceStore().setDefault(ITalendCorePrefConstants.SQL_ADD_WARNING, true);
 

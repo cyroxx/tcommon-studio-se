@@ -12,28 +12,26 @@
 // ============================================================================
 package org.talend.designer.maven.ui.projectsetting;
 
-import org.talend.core.runtime.preference.AbstractProjectSettingPage;
+import java.io.IOException;
+
+import org.talend.core.runtime.projectsetting.AbstractScriptProjectSettingPage;
 import org.talend.designer.maven.ui.DesignerMavenUiPlugin;
 
 /**
  * DOC ggu class global comment. Detailled comment
  */
-public class MainMavenProjectPreferencePage extends AbstractProjectSettingPage {
-
-    public MainMavenProjectPreferencePage() {
-        super();
-
-        noDefaultAndApplyButton();
-    }
+public abstract class AbstractPersistentProjectSettingPage extends AbstractScriptProjectSettingPage {
 
     @Override
-    protected String getPreferenceName() {
-        return DesignerMavenUiPlugin.PLUGIN_ID;
+    protected void initStore() {
+        this.setPreferenceStore(DesignerMavenUiPlugin.getDefault().getProjectPreferenceManager().getPreferenceStore());
     }
 
-    @Override
-    protected void createFieldEditors() {
-
+    public void load() throws IOException {
+        // nothing to do
     }
 
+    public void save() throws IOException {
+        // nothing to do
+    }
 }

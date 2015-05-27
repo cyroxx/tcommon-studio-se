@@ -21,8 +21,7 @@ import java.util.Set;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.talend.core.model.process.JobInfo;
-import org.talend.designer.maven.model.TalendMavenConstants;
+import org.talend.core.model.general.ModuleNeeded;
 import org.talend.designer.maven.utils.PomUtil;
 import org.talend.designer.runprocess.IProcessor;
 import org.talend.designer.runprocess.ProcessorException;
@@ -39,30 +38,26 @@ public class ProcessorDependenciesManager {
         this.processor = processor;
     }
 
+    /**
+     * Will add the dependencies to the maven model.
+     */
     public boolean updateDependencies(IProgressMonitor progressMonitor, Model model) throws ProcessorException {
         try {
             List<Dependency> neededDependencies = new ArrayList<Dependency>();
 
             // add the job modules.
-            Set<String> neededLibraries = processor.getNeededLibraries();
-            for (String lib : neededLibraries) {
-                Dependency dependency = PomUtil.createModuleDependency(lib);
+            Set<ModuleNeeded> neededLibraries = processor.getNeededModules();
+            for (ModuleNeeded module : neededLibraries) {
+                Dependency dependency;
+                if (module.getMavenUri() != null && !module.getMavenUri().isEmpty()) {
+                    dependency = PomUtil.createModuleDependency(module.getMavenUri());
+                } else {
+                    dependency = PomUtil.createModuleDependency(module.getModuleName());
+                }
                 if (dependency != null) {
                     neededDependencies.add(dependency);
                 }
             }
-            String parentId = processor.getProperty().getId();
-            Set<JobInfo> jobInfos = processor.getBuildChildrenJobs();
-            for (JobInfo jobInfo : jobInfos) {
-                if (jobInfo.getFatherJobInfo() != null && jobInfo.getFatherJobInfo().getJobId().equals(parentId)) {
-                    Dependency dependency = new Dependency();
-                    dependency.setGroupId(TalendMavenConstants.DEFAULT_JOB_GROUP_ID);
-                    dependency.setArtifactId(jobInfo.getJobName());
-                    dependency.setVersion(jobInfo.getJobVersion());
-                    neededDependencies.add(dependency);
-                }
-            }
-
             return updateDependencies(progressMonitor, model, neededDependencies, false);
 
         } catch (Exception e) {

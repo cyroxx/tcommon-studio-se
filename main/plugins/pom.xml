@@ -22,15 +22,14 @@
 
 	<distributionManagement>
 		<repository>
-			<id>tos-releases</id>
+			<id>releases</id>
 			<name>TOS releases Repository</name>
-			<url>${tos.releases.repo.url}</url>
+			<url>http://newbuild.talend.com:8081/nexus/content/repositories/releases/</url>
 		</repository>
 		<snapshotRepository>
-			<id>tos-snapshots</id>
+			<id>snapshots</id>
 			<name>TOS snapshots Repository</name>
-			<url>${tos.snapshots.repo.url}</url>
+			<url>http://newbuild.talend.com:8081/nexus/content/repositories/snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
-
 </project>

@@ -54,6 +54,8 @@ public class ExtensionModuleManager {
 
     public final static String URIPATH_ATTR = "uripath"; //$NON-NLS-1$
 
+    public final static String MVN_URI_ATTR = "mvn_uri"; //$NON-NLS-1$
+
     public final static String BUNDLEID_ATTR = "bundleID"; //$NON-NLS-1$
 
     public final static String DESC_ATTR = "description"; //$NON-NLS-1$
@@ -117,6 +119,7 @@ public class ExtensionModuleManager {
             moduleNeeded.setMrRequired(importType.isMRREQUIRED());
             moduleNeeded.setRequiredIf(importType.getREQUIREDIF());
             moduleNeeded.setShow(importType.isSHOW());
+            moduleNeeded.setMavenUri(importType.getMVN());
             ModulesNeededProvider.initBundleID(importType, moduleNeeded);
             importNeedsList.add(moduleNeeded);
         }

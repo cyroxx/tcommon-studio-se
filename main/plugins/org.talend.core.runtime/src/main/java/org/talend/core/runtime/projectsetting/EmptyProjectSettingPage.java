@@ -10,30 +10,17 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.designer.maven.ui.projectsetting;
-
-import org.talend.core.runtime.preference.AbstractProjectSettingPage;
-import org.talend.designer.maven.ui.DesignerMavenUiPlugin;
+package org.talend.core.runtime.projectsetting;
 
 /**
  * DOC ggu class global comment. Detailled comment
  */
-public class EmptyMavenSettingPreferencePage extends AbstractProjectSettingPage {
+public class EmptyProjectSettingPage extends AbstractProjectSettingPage {
 
-    public EmptyMavenSettingPreferencePage() {
+    public EmptyProjectSettingPage() {
         super();
 
         noDefaultAndApplyButton();
-    }
-
-    @Override
-    protected String getPreferenceName() {
-        return DesignerMavenUiPlugin.PLUGIN_ID;
-    }
-
-    @Override
-    protected void createFieldEditors() {
-
     }
 
 }

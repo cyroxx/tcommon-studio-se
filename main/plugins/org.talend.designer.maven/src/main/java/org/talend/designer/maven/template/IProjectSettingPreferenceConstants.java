@@ -20,4 +20,5 @@ public interface IProjectSettingPreferenceConstants {
     public static final String MAVEN_SCRIPT_AUTONOMOUSJOB_TEMPLATE = "autonomousjob_maven_script_template"; //$NON-NLS-1$
 
     public static final String MAVEN_SCRIPT_AUTONOMOUSJOB_ASSEMBLY_TEMPLATE = "autonomousjob_assembly_maven_script_template"; //$NON-NLS-1$
+
 }

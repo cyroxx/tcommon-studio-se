@@ -17,31 +17,21 @@
 			<destName>jobInfo.properties</destName>
 			<filtered>true</filtered>
 		</file>
-		<file> <!-- sh -->
-			<source>${basedir}/src/main/templates/Job_run_template.sh</source>
-			<outputDirectory>${talend.job.name}</outputDirectory>
-			<destName>${talend.job.name}_run.sh</destName>
-			<filtered>true</filtered>
-		</file>
-		<file> <!-- bat -->
-			<source>${basedir}/src/main/templates/Job_run_template.bat</source>
-			<outputDirectory>${talend.job.name}</outputDirectory>
-			<destName>${talend.job.name}_run.bat</destName>
-			<filtered>true</filtered>
-		</file>
 	</files>
 
 	<fileSets>
 		<fileSet><!-- templates -->
-			<directory>${basedir}/src/main/templates/</directory>
-			<outputDirectory>${talend.job.name}/src/main/templates/</outputDirectory>
+			<directory>${templates.dir}</directory>
+			<outputDirectory>${talend.job.name}/src/main/templates/
+			</outputDirectory>
 			<includes>
 				<include>**</include>
 			</includes>
 		</fileSet>
 		<fileSet><!-- some resources -->
-			<directory>${basedir}/src/main/resources/</directory>
-			<outputDirectory>${talend.job.name}/src/main/resources/</outputDirectory>
+			<directory>${resources.dir}</directory>
+			<outputDirectory>${talend.job.name}/src/main/resources/
+			</outputDirectory>
 			<includes>
 				<include>xmlMappings/**</include>
 				<include>sqltemplates/**</include>
@@ -50,14 +40,15 @@
 			</includes>
 		</fileSet>
 		<fileSet><!-- assembly.xml -->
-			<directory>${basedir}/src/main/assemblies/</directory>
-			<outputDirectory>${talend.job.name}/src/main/assemblies/</outputDirectory>
+			<directory>${assemblies.dir}</directory>
+			<outputDirectory>${talend.job.name}/src/main/assemblies/
+			</outputDirectory>
 			<includes>
 				<include>assembly_${talend.job.name}.xml</include>
 			</includes>
 		</fileSet>
 		<fileSet><!-- pom_*.xml -->
-			<directory>${basedir}</directory>
+			<directory>${poms.dir}</directory>
 			<outputDirectory>${talend.job.name}</outputDirectory>
 			<includes>
 				<include>pom.xml</include>
@@ -66,14 +57,14 @@
 			</includes>
 		</fileSet>
 		<fileSet> <!-- add items -->
-			<directory>${basedir}/src/main/items/</directory>
+			<directory>${items.dir}</directory>
 			<outputDirectory>${talend.job.name}/src/main/items/</outputDirectory>
 			<includes>
 				<include>**</include>
 			</includes>
 		</fileSet>
-		<fileSet> <!-- add java resouces -->
-			<directory>${project.build.sourceDirectory}</directory>
+		<fileSet> <!-- add java source codes -->
+			<directory>${sourcecodes.dir}</directory>
 			<outputDirectory>${talend.job.name}/src/main/java/</outputDirectory>
 			<includes>
 				<include>routines/**</include>
@@ -81,14 +72,46 @@
 			</includes>
 		</fileSet>
 		<fileSet><!-- add context resources -->
-			<directory>${basedir}/src/main/resources/</directory>
-			<outputDirectory>${talend.job.name}/src/main/resources/</outputDirectory>
+			<directory>${resources.dir}</directory>
+			<outputDirectory>${talend.job.name}/src/main/resources/
+			</outputDirectory>
 			<includes>
 				<include>${talend.job.path}/**</include>
 			</includes>
 		</fileSet>
+		<fileSet> <!-- add test source codes -->
+			<directory>${test.sourcecodes.dir}</directory>
+			<outputDirectory>${talend.job.name}/src/test/java/</outputDirectory>
+			<includes>
+				<include>${talend.job.path}/**</include>
+			</includes>
+		</fileSet>
+		<fileSet> <!-- add test context resources -->
+			<directory>${test.resources.dir}</directory>
+			<outputDirectory>${talend.job.name}/src/test/resources/
+			</outputDirectory>
+			<includes>
+				<include>${talend.job.path}/**</include>
+			</includes>
+		</fileSet>
+		<fileSet> <!-- add test reports -->
+			<directory>${reports.dir}</directory>
+			<outputDirectory>${talend.job.name}/tests/</outputDirectory>
+			<includes>
+				<include>**/*.*</include>
+			</includes>
+		</fileSet>
+		<fileSet> <!-- add running scripts files -->
+			<directory>${running.scripts.dir}</directory>
+			<outputDirectory>${talend.job.name}/</outputDirectory>
+			<includes>
+				<include>${talend.job.name}_run.sh</include>
+				<include>${talend.job.name}_run.bat</include>
+			</includes>
+			<filtered>true</filtered>
+		</fileSet>
 		<fileSet><!-- add context resources for running -->
-			<directory>${basedir}/src/main/resources/</directory>
+			<directory>${contexts.running.dir}</directory>
 			<outputDirectory>${talend.job.name}</outputDirectory>
 			<includes>
 				<include>${talend.job.path}/**</include>
@@ -96,55 +119,58 @@
 		</fileSet>
 		<!-- If have children jobs, will add here -->
 	</fileSets>
-<dependencySets>
-        <dependencySet>
-            <outputDirectory>${talend.job.name}/lib</outputDirectory>
-            <includes>
-                <include>org.talend.libraries:*</include>
-            </includes>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}
-            </outputFileNameMapping>
-            <useProjectArtifact>false</useProjectArtifact>
-        </dependencySet>
-        <dependencySet>
-            <outputDirectory>${talend.job.name}/lib</outputDirectory>
-            <excludes>
-                <exclude>org.talend.libraries:*</exclude>
-                <exclude>${artifact.groupId}:*</exclude>
-            </excludes>
-            <useProjectArtifact>false</useProjectArtifact>
-        </dependencySet>
-    </dependencySets>
-    <moduleSets>
-        <moduleSet>
-            <useAllReactorProjects>true</useAllReactorProjects>
-            <includes>
-                <include>${artifact.groupId}:${artifact.artifactId}</include>
-            </includes>
-            <binaries>
-                <outputDirectory>${talend.job.name}</outputDirectory>
-                <includeDependencies>true</includeDependencies>
-                <unpack>false</unpack>
-                <includes>
-                    <include>org.talend.job:*</include>
-                </includes>
-                <!-- <outputFileNameMapping>${module.artifactId}_${module.version}.${module.extension}
-                    </outputFileNameMapping> -->
-            </binaries>
-        </moduleSet>
-        <moduleSet>
-<!-- only for routines -->
-            <useAllReactorProjects>true</useAllReactorProjects>
-            <includes>
-                <include>org.talend.code:*</include>
-            </includes>
-            <binaries>
-                <outputDirectory>${talend.job.name}/lib</outputDirectory>
-                <includeDependencies>false</includeDependencies>
-                <unpack>false</unpack>
-                <outputFileNameMapping>${module.artifactId}.${module.extension}
-                </outputFileNameMapping>
-            </binaries>
-        </moduleSet>
-    </moduleSets>
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>${talend.job.name}/lib</outputDirectory>
+			<includes>
+				<include>${talend.libraries.includes.set}</include>
+			</includes>
+			<!-- without version for talend libraries -->
+			<outputFileNameMapping>${artifact.artifactId}.${artifact.extension}
+			</outputFileNameMapping>
+			<useProjectArtifact>false</useProjectArtifact>
+		</dependencySet>
+		<dependencySet>
+			<outputDirectory>${talend.job.name}/lib</outputDirectory>
+			<excludes>
+				<exclude>${talend.libraries.excludes.set}</exclude>
+				<exclude>${talend.jobs.excludes.set}</exclude>
+			</excludes>
+			<useProjectArtifact>false</useProjectArtifact>
+		</dependencySet>
+	</dependencySets>
+	<moduleSets>
+		<moduleSet>
+			<useAllReactorProjects>true</useAllReactorProjects>
+			<includes>
+				<include>${jobs.binaries.includes.set}</include>
+			</includes>
+			<binaries>
+				<outputDirectory>${talend.job.name}</outputDirectory>
+				<includeDependencies>true</includeDependencies>
+				<unpack>false</unpack>
+				<includes>
+					<!-- add the children jobs binaries -->
+					<include>${jobs.binaries.includes.set}</include>
+				</includes>
+				<!-- use default file mapping settings -->
+				<!-- <outputFileNameMapping>${module.artifactId}_${module.version}.${module.extension} 
+					</outputFileNameMapping> -->
+			</binaries>
+		</moduleSet>
+		<moduleSet>
+			<!-- only for routines currently -->
+			<useAllReactorProjects>true</useAllReactorProjects>
+			<includes>
+				<include>${routines.binaries.includes.set}</include>
+			</includes>
+			<binaries>
+				<outputDirectory>${talend.job.name}/lib</outputDirectory>
+				<includeDependencies>false</includeDependencies>
+				<unpack>false</unpack>
+				<outputFileNameMapping>${module.artifactId}.${module.extension}
+				</outputFileNameMapping>
+			</binaries>
+		</moduleSet>
+	</moduleSets>
 </assembly>

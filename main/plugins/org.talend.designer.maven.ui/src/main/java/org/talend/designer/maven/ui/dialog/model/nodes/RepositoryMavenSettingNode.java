@@ -19,7 +19,7 @@ import org.eclipse.jface.preference.IPreferencePage;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.ui.runtime.image.EImage;
 import org.talend.commons.ui.runtime.image.ImageProvider;
-import org.talend.designer.maven.ui.projectsetting.AbstractMavenScriptProjectSettingPage;
+import org.talend.designer.maven.ui.projectsetting.AbstractPersistentProjectSettingPage;
 import org.talend.designer.maven.ui.utils.DesignerMavenUiHelper;
 
 /**
@@ -30,8 +30,8 @@ public class RepositoryMavenSettingNode extends RepositoryPreferenceNode {
     private IFile file;
 
     public RepositoryMavenSettingNode(String id, IFile file) {
-        super(id, DesignerMavenUiHelper.displayWithExtension ? file.getName() : file.getProjectRelativePath().removeFileExtension()
-                .lastSegment(), ImageProvider.getImageDesc(EImage.KEY_ICON), null);
+        super(id, DesignerMavenUiHelper.displayWithExtension ? file.getName() : file.getProjectRelativePath()
+                .removeFileExtension().lastSegment(), ImageProvider.getImageDesc(EImage.KEY_ICON), null);
         this.file = file;
     }
 
@@ -48,8 +48,8 @@ public class RepositoryMavenSettingNode extends RepositoryPreferenceNode {
     public void createPage() {
         super.createPage();
         IPreferencePage page = this.getPage();
-        if (page instanceof AbstractMavenScriptProjectSettingPage) {
-            AbstractMavenScriptProjectSettingPage prefPage = (AbstractMavenScriptProjectSettingPage) page;
+        if (page instanceof AbstractPersistentProjectSettingPage) {
+            AbstractPersistentProjectSettingPage prefPage = (AbstractPersistentProjectSettingPage) page;
             prefPage.setHeaderMessage("Path: " + this.getFile().getProjectRelativePath());
 
             try {

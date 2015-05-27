@@ -34,6 +34,10 @@ import org.talend.designer.maven.launch.MavenCommandLauncher;
 @SuppressWarnings("restriction")
 public class LocalRepsitoryLauncherManager extends LocalRepositoryManager {
 
+    public LocalRepsitoryLauncherManager() {
+        super();
+    }
+
     public LocalRepsitoryLauncherManager(File baseDir) {
         super(baseDir);
     }

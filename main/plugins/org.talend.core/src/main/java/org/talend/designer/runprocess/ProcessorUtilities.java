@@ -1505,9 +1505,15 @@ public class ProcessorUtilities {
                 sb.append(s).append(' ');
             }
         }
-        String commandStr = CorePlugin.getDefault().getPreferenceStore().getString(ITalendCorePrefConstants.COMMAND_STR);
-        String finalCommand = commandStr.replace(ITalendCorePrefConstants.DEFAULT_COMMAND_STR, sb.toString());
-        return finalCommand;
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
+            IRunProcessService runProcessService = (IRunProcessService) GlobalServiceRegister.getDefault().getService(
+                    IRunProcessService.class);
+            String commandStr = runProcessService.getProjectPreferenceManager().getPreferenceStore()
+                    .getString(ITalendCorePrefConstants.COMMAND_STR);
+            String finalCommand = commandStr.replace(ITalendCorePrefConstants.DEFAULT_COMMAND_STR, sb.toString());
+            return finalCommand;
+        }
+        return sb.toString();
     }
 
     /**

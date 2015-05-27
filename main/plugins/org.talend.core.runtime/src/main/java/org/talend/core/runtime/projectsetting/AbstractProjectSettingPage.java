@@ -10,7 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.core.runtime.preference;
+package org.talend.core.runtime.projectsetting;
 
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.resource.JFaceResources;
@@ -25,14 +25,11 @@ import org.eclipse.swt.widgets.Label;
  */
 public abstract class AbstractProjectSettingPage extends FieldEditorPreferencePage {
 
-    private final ProjectPreferenceManager projectPreferenceManager;
-
     private String prefNodeId;
 
     public AbstractProjectSettingPage() {
         super();
-        // create project preference manager
-        this.projectPreferenceManager = new ProjectPreferenceManager(getPreferenceName());
+
         initStore();
     }
 
@@ -45,16 +42,23 @@ public abstract class AbstractProjectSettingPage extends FieldEditorPreferencePa
     }
 
     protected void initStore() {
-        // set the project preference
-        setPreferenceStore(this.projectPreferenceManager.getPreferenceStore());
+        String preferenceName = getPreferenceName();
+        if (preferenceName != null) {
+            ProjectPreferenceManager projectPreferenceManager = new ProjectPreferenceManager(preferenceName);
+            // set the project preference
+            setPreferenceStore(projectPreferenceManager.getPreferenceStore());
+        }
 
     }
 
-    protected ProjectPreferenceManager getProjectPreferenceManager() {
-        return projectPreferenceManager;
+    protected String getPreferenceName() {
+        return null;
     }
 
-    protected abstract String getPreferenceName();
+    @Override
+    protected void createFieldEditors() {
+        // nothing to do
+    }
 
     protected Composite createLabelComposite(Composite parent, String title) {
         Composite composite = new Composite(parent, SWT.NONE);

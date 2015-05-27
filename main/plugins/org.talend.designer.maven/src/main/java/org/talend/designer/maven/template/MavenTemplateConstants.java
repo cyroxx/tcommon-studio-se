@@ -25,6 +25,8 @@ public interface MavenTemplateConstants {
 
     final static String POM_JOB_TEMPLATE_FILE_NAME = "pom_job_template.xml";
 
+    final static String POM_TEST_TEMPLATE_FILE_NAME = "pom_test_template.xml";
+
     final static String ASSEMBLY_JOB_TEMPLATE_FILE_NAME = "assembly_job_template.xml";
 
     final static String PROJECT_TEMPLATE_FILE_NAME = "pom_project_template.xml";

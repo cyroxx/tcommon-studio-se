@@ -19,7 +19,7 @@ import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.widgets.Composite;
 import org.talend.designer.maven.ui.dialog.model.RepositoryMavenSettingStore;
-import org.talend.designer.maven.ui.projectsetting.job.AutonomousJobAssemblyProjectPreferencePage;
+import org.talend.designer.maven.ui.projectsetting.job.AutonomousJobAssemblyProjectSettingPage;
 
 /**
  * DOC ggu class global comment. Detailled comment
@@ -32,7 +32,7 @@ public class RepositoryMavenAssemblyNode extends RepositoryMavenSettingNode {
 
     @Override
     protected PreferencePage createPreferencePage() {
-        return new AutonomousJobAssemblyProjectPreferencePage() {
+        return new AutonomousJobAssemblyProjectSettingPage() {
 
             @Override
             public void createControl(Composite parent) {

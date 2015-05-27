@@ -8,8 +8,9 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.ICoreService;
+import org.talend.login.AbstractLoginTask;
 
-public class GeneratedJetEmitersLoginTask implements IRunnableWithProgress {
+public class GeneratedJetEmitersLoginTask extends AbstractLoginTask implements IRunnableWithProgress {
 
     private static Logger log = Logger.getLogger(GeneratedJetEmitersLoginTask.class);
 

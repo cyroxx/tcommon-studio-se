@@ -20,13 +20,18 @@ import java.util.Set;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.m2e.core.MavenPlugin;
+import org.eclipse.m2e.core.embedder.IMaven;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.VersionUtils;
 import org.talend.core.GlobalServiceRegister;
@@ -206,7 +211,7 @@ public class PomUtil {
      * 
      * @return
      */
-    public static Dependency createModuleDependency(String groupId, String artifactId, String version, String type) {
+    public static Dependency createDependency(String groupId, String artifactId, String version, String type) {
         if (artifactId == null) {
             return null;
         }
@@ -230,8 +235,7 @@ public class PomUtil {
 
         MavenArtifact artifact = MavenUrlHelper.parseMvnUrl(mvnUrl);
         if (artifact != null) {
-            return createModuleDependency(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
-                    artifact.getType());
+            return createDependency(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType());
         }
         return null;
     }
@@ -383,6 +387,76 @@ public class PomUtil {
         if (libFile.exists() && !PomUtil.isAvailable(artifact)) {
             repoManager.install(libFile, artifact);
         }
+    }
+
+    /**
+     * 
+     * Try to find the template files form the path which based on root container first. if not found, will try to find
+     * in parent folder until root container.
+     */
+    public static File getTemplateFile(IContainer templateRootContainer, IPath templateRelativePath, String fileName) {
+        if (templateRootContainer == null || !templateRootContainer.exists() || fileName == null || fileName.length() == 0) {
+            return null;
+        }
+        try {
+            templateRootContainer.refreshLocal(IResource.DEPTH_INFINITE, null);
+        } catch (CoreException e) {
+            //
+        }
+
+        IContainer baseContainer = templateRootContainer; // support found the file in current base container.
+        boolean hasPath = templateRelativePath != null && !templateRelativePath.isEmpty();
+        if (hasPath) {
+            baseContainer = templateRootContainer.getFolder(templateRelativePath);
+        }
+        if (baseContainer.exists()) { // if the relative path is not existed, won't find again.
+            IFile file = null;
+            if (baseContainer instanceof IFolder) {
+                file = ((IFolder) baseContainer).getFile(fileName);
+            } else if (baseContainer instanceof IProject) {
+                file = ((IProject) baseContainer).getFile(fileName);
+            }
+            if (file != null && file.exists()) {
+                return file.getLocation().toFile();
+            } else if (hasPath) {
+                // find from parent folder
+                return getTemplateFile(templateRootContainer, templateRelativePath.removeLastSegments(1), fileName);
+            }
+        }
+        return null;
+    }
+
+    public static String getArtifactPath(MavenArtifact artifact) {
+        IMaven maven = MavenPlugin.getMaven();
+        String artifactPath = null;
+        try {
+            artifactPath = maven.getArtifactPath(maven.getLocalRepository(), artifact.getGroupId(), artifact.getArtifactId(),
+                    artifact.getVersion(), artifact.getType(), artifact.getClassifier());
+        } catch (CoreException e) {
+            ExceptionHandler.process(e);
+        }
+        return artifactPath;
+    }
+
+    public static String getAbsArtifactPath(MavenArtifact artifact) {
+        if (artifact == null) {
+            return null;
+        }
+        IMaven maven = MavenPlugin.getMaven();
+        String artifactPath = getArtifactPath(artifact);
+        if (artifactPath == null) {
+            return null;
+        }
+        String localRepositoryPath = maven.getLocalRepositoryPath();
+        if (!localRepositoryPath.endsWith("/") && !localRepositoryPath.endsWith("\\")) {
+            localRepositoryPath = localRepositoryPath + "/";
+        }
+        File file = new File(localRepositoryPath + artifactPath);
+        if (file.exists()) {
+            return file.getAbsolutePath();
+        }
+
+        return null;
     }
 
 }

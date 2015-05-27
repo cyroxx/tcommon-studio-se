@@ -14,7 +14,6 @@ package org.talend.designer.maven.ui;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.talend.core.runtime.services.IDesignerMavenUIService;
-import org.talend.designer.maven.ui.projectsetting.MavenProjectSettingPreferenceManager;
 
 /**
  * DOC ggu class global comment. Detailled comment
@@ -22,8 +21,7 @@ import org.talend.designer.maven.ui.projectsetting.MavenProjectSettingPreference
 public class DesignerMavenUIService implements IDesignerMavenUIService {
 
     public String getProjectSettingPreferenceValue(String key) {
-        IPreferenceStore preferenceStore = MavenProjectSettingPreferenceManager.getInstance().getProjectPreferenceManager()
-                .getPreferenceStore();
+        IPreferenceStore preferenceStore = DesignerMavenUiPlugin.getDefault().getProjectPreferenceManager().getPreferenceStore();
         return preferenceStore.getString(key);
     }
 

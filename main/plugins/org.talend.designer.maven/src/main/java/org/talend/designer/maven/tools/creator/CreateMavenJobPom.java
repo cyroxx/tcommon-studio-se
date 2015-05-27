@@ -33,11 +33,14 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.exception.PersistenceException;
@@ -69,6 +72,7 @@ import org.talend.designer.runprocess.IProcessor;
 import org.talend.designer.runprocess.ProcessorException;
 import org.talend.repository.ProjectManager;
 import org.talend.repository.model.IProxyRepositoryFactory;
+import org.talend.utils.io.FilesUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -88,17 +92,19 @@ public class CreateMavenJobPom extends CreateMavenBundleTemplatePom {
 
     private Set<JobInfo> clonedJobInfos = new HashSet<JobInfo>();
 
-    private final ProcessorDependenciesManager pomManager;
+    private final ProcessorDependenciesManager processorDependenciesManager;
 
     private IFile assemblyFile;
 
-    private File templateBaseFolder;
+    private IFolder objectTypeFolder;
+
+    private IPath itemRelativePath;
 
     public CreateMavenJobPom(IProcessor jobProcessor, IFile pomFile) {
         super(pomFile, MavenTemplateConstants.POM_JOB_TEMPLATE_FILE_NAME);
         Assert.isNotNull(jobProcessor);
         this.jobProcessor = jobProcessor;
-        this.pomManager = new ProcessorDependenciesManager(jobProcessor);
+        this.processorDependenciesManager = new ProcessorDependenciesManager(jobProcessor);
     }
 
     public IProcessor getJobProcessor() {
@@ -145,12 +151,20 @@ public class CreateMavenJobPom extends CreateMavenBundleTemplatePom {
         this.assemblyFile = assemblyFile;
     }
 
-    public File getTemplateBaseFolder() {
-        return templateBaseFolder;
+    public IFolder getObjectTypeFolder() {
+        return objectTypeFolder;
     }
 
-    public void setTemplateBaseFolder(File templateBaseFolder) {
-        this.templateBaseFolder = templateBaseFolder;
+    public void setObjectTypeFolder(IFolder objectTypeFolder) {
+        this.objectTypeFolder = objectTypeFolder;
+    }
+
+    public IPath getItemRelativePath() {
+        return itemRelativePath;
+    }
+
+    public void setItemRelativePath(IPath itemRelativePath) {
+        this.itemRelativePath = itemRelativePath;
     }
 
     private Set<JobInfo> getClonedJobInfos() {
@@ -239,9 +253,10 @@ public class CreateMavenJobPom extends CreateMavenBundleTemplatePom {
      */
     @Override
     protected InputStream getTemplateStream() throws IOException {
-        File templateFile = null;
-        if (getTemplateBaseFolder() != null) {
-            templateFile = new File(getTemplateBaseFolder(), TalendMavenConstants.POM_FILE_NAME);
+        File templateFile = PomUtil.getTemplateFile(getObjectTypeFolder(), getItemRelativePath(),
+                TalendMavenConstants.POM_FILE_NAME);
+        if (!FilesUtils.allInSameFolder(templateFile, TalendMavenConstants.ASSEMBLY_FILE_NAME)) {
+            templateFile = null; // force to set null, in order to use the template from other places.
         }
         return MavenTemplateManager.getTemplateStream(templateFile,
                 IProjectSettingPreferenceConstants.MAVEN_SCRIPT_AUTONOMOUSJOB_TEMPLATE, getBundleTemplateName());
@@ -333,7 +348,20 @@ public class CreateMavenJobPom extends CreateMavenBundleTemplatePom {
      */
     protected void addDependencies(Model model) {
         try {
-            pomManager.updateDependencies(null, model);
+            processorDependenciesManager.updateDependencies(null, model);
+
+            // add children jobs in dependencies
+            final List<Dependency> dependencies = model.getDependencies();
+            String parentId = getJobProcessor().getProperty().getId();
+            final Set<JobInfo> clonedChildrenJobInfors = getClonedJobInfos();
+            for (JobInfo jobInfo : clonedChildrenJobInfors) {
+                if (jobInfo.getFatherJobInfo() != null && jobInfo.getFatherJobInfo().getJobId().equals(parentId)) {
+                    Dependency d = PomUtil.createDependency(model.getGroupId(), jobInfo.getJobName(), jobInfo.getJobVersion(),
+                            null);
+                    dependencies.add(d);
+                }
+            }
+
         } catch (ProcessorException e) {
             ExceptionHandler.process(e);
         }
@@ -359,10 +387,12 @@ public class CreateMavenJobPom extends CreateMavenBundleTemplatePom {
             boolean set = false;
             // read template from project setting
             try {
-                File templateFile = null;
-                if (getTemplateBaseFolder() != null) {
-                    templateFile = new File(getTemplateBaseFolder(), TalendMavenConstants.ASSEMBLY_FILE_NAME);
+                File templateFile = PomUtil.getTemplateFile(getObjectTypeFolder(), getItemRelativePath(),
+                        TalendMavenConstants.ASSEMBLY_FILE_NAME);
+                if (!FilesUtils.allInSameFolder(templateFile, TalendMavenConstants.POM_FILE_NAME)) {
+                    templateFile = null; // force to set null, in order to use the template from other places.
                 }
+
                 String content = MavenTemplateManager.getTemplateContent(templateFile,
                         IProjectSettingPreferenceConstants.MAVEN_SCRIPT_AUTONOMOUSJOB_ASSEMBLY_TEMPLATE,
                         MavenTemplateConstants.ASSEMBLY_JOB_TEMPLATE_FILE_NAME);
@@ -445,19 +475,22 @@ public class CreateMavenJobPom extends CreateMavenBundleTemplatePom {
             childrenFolderResourcesIncludes.add(jobClassPackageFolder + "/**"); // add all context
 
         }
+        /*
+         * FIXME, if change the profiles setting for directory, must need change this parts.
+         */
         if (!clonedChildrenJobInfors.isEmpty()) {
             // poms
-            addAssemblyFileSets(fileSetsElem, "${basedir}", "${talend.job.name}", false, childrenPomsIncludes, null, null, null,
+            addAssemblyFileSets(fileSetsElem, "${poms.dir}", "${talend.job.name}", false, childrenPomsIncludes, null, null, null,
                     null, false, "add children pom files.");
 
             // src
-            addAssemblyFileSets(fileSetsElem, "${project.build.sourceDirectory}", "${talend.job.name}/src/main/java/", false,
+            addAssemblyFileSets(fileSetsElem, "${sourcecodes.dir}", "${talend.job.name}/src/main/java/", false,
                     childrenFolderResourcesIncludes, null, null, null, null, false, "add children src resources files.");
 
             // contexts
-            addAssemblyFileSets(fileSetsElem, "${basedir}/src/main/resources/", "${talend.job.name}/src/main/resources/", false,
+            addAssemblyFileSets(fileSetsElem, "${resources.dir}", "${talend.job.name}/src/main/resources/", false,
                     childrenFolderResourcesIncludes, null, null, null, null, false, "add children context files to resources.");
-            addAssemblyFileSets(fileSetsElem, "${basedir}/src/main/resources/", "${talend.job.name}", false,
+            addAssemblyFileSets(fileSetsElem, "${contexts.running.dir}", "${talend.job.name}", false,
                     childrenFolderResourcesIncludes, null, null, null, null, false, "add children context files for running.");
 
             TransformerFactory transFactory = TransformerFactory.newInstance();
@@ -465,31 +498,45 @@ public class CreateMavenJobPom extends CreateMavenBundleTemplatePom {
             transFormer.setOutputProperty(OutputKeys.INDENT, "yes");
             transFormer.transform(new DOMSource(document), new StreamResult(new FileOutputStream(file)));
 
-            // must remove the assembly plugins for children poms, else will be some errors.
-            for (String childPomFile : childrenPomsIncludes) {
-                IFile childPom = assemblyFile.getProject().getFile(childPomFile);
-                if (childPom.exists()) {
-                    Model childModel = MODEL_MANAGER.readMavenModel(childPom);
-                    List<Plugin> childPlugins = new ArrayList<Plugin>(childModel.getBuild().getPlugins());
-                    Iterator<Plugin> childIterator = childPlugins.iterator();
-                    while (childIterator.hasNext()) {
-                        Plugin p = childIterator.next();
-                        if (p.getArtifactId().equals("maven-assembly-plugin")) { //$NON-NLS-1$
-                            childIterator.remove();
-                        }
-
-                    }
-
-                    childModel.getBuild().setPlugins(childPlugins);
-
-                    PomUtil.savePom(monitor, childModel, childPom);
-                }
-            }
+            // clean for children poms
+            cleanChildrenPomSettings(monitor, childrenPomsIncludes);
 
             // refresh the project level for children poms
             assemblyFile.getProject().refreshLocal(IResource.DEPTH_ONE, monitor);
         }
 
+    }
+
+    protected void cleanChildrenPomSettings(IProgressMonitor monitor, List<String> childrenPomsIncludes) throws Exception {
+        for (String childPomFile : childrenPomsIncludes) {
+            IFile childPom = assemblyFile.getProject().getFile(childPomFile);
+            if (childPom.exists()) {
+                Model childModel = MODEL_MANAGER.readMavenModel(childPom);
+                List<Plugin> childPlugins = new ArrayList<Plugin>(childModel.getBuild().getPlugins());
+                Iterator<Plugin> childIterator = childPlugins.iterator();
+                while (childIterator.hasNext()) {
+                    Plugin p = childIterator.next();
+                    if (p.getArtifactId().equals("maven-assembly-plugin")) { //$NON-NLS-1$
+                        // must remove the assembly plugins for children poms, else will be some errors.
+                        childIterator.remove();
+                    } else if (p.getArtifactId().equals("maven-antrun-plugin")) { //$NON-NLS-1$
+                        // because no assembly, so no need copy the scripts and rename it.
+                        childIterator.remove();
+                    }
+
+                }
+
+                childModel.getBuild().setPlugins(childPlugins);
+
+                /*
+                 * FIXME, Won't have assembly, maybe also move the profiles, because so far, the profiles are useful for
+                 * assembly only. If later, the profiles will use by other tasks, should remove this codes.
+                 */
+                childModel.getProfiles().clear();
+
+                PomUtil.savePom(monitor, childModel, childPom);
+            }
+        }
     }
 
     private Node getElement(Node parent, String elemName, int level) {

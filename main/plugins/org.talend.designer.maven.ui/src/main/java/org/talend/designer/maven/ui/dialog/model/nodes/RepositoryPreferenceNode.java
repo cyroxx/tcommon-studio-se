@@ -17,9 +17,9 @@ import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.talend.commons.ui.runtime.image.ImageProvider;
-import org.talend.core.runtime.preference.AbstractProjectSettingPage;
+import org.talend.core.runtime.projectsetting.AbstractProjectSettingPage;
+import org.talend.core.runtime.projectsetting.EmptyProjectSettingPage;
 import org.talend.core.ui.images.RepositoryImageProvider;
-import org.talend.designer.maven.ui.projectsetting.EmptyMavenSettingPreferencePage;
 import org.talend.repository.model.RepositoryNode;
 
 /**
@@ -70,7 +70,7 @@ public class RepositoryPreferenceNode extends PreferenceNode {
     }
 
     protected PreferencePage createPreferencePage() {
-        return new EmptyMavenSettingPreferencePage();
+        return new EmptyProjectSettingPage();
     }
 
     /*

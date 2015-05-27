@@ -7,8 +7,6 @@
 package org.talend.librariesmanager.emf.librariesindex;
 
 import org.eclipse.emf.common.util.EMap;
-import java.util.Map;
-
 import org.eclipse.emf.ecore.EObject;
 
 /**

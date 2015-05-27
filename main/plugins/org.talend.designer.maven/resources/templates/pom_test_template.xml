@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.talend.master</groupId>
+		<artifactId>master.Codes</artifactId>
+		<version>6.0.0</version>
+		<relativePath>./pom.xml</relativePath>
+	</parent>
+	<groupId>org.talend.job</groupId>
+	<artifactId>Job</artifactId>
+	<version>0.1</version>
+
+	<properties>
+		<talend.job.path>@JobPath@</talend.job.path>
+
+		<!-- for jobInfo.properties -->
+		<talend.project.name>@ProjectName@</talend.project.name>
+		<talend.project.id>@ProjectId@</talend.project.id>
+		<talend.project.branch>@ProjectBranch@</talend.project.branch>
+		<talend.job.name>${project.artifactId}</talend.job.name> <!-- @JobName@ -->
+		<talend.job.version>${project.version}</talend.job.version> <!-- @JobVersion@ -->
+		<talend.job.date>@JobDate@</talend.job.date>
+		<talend.product.version>@ProductVersion@</talend.product.version>
+	</properties>
+
+	<dependencies>
+		<!-- Add some dependencies jars -->
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-clean</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<testIncludes>
+						<include>${talend.job.path}/**</include>
+					</testIncludes>
+                    <excludes>
+                        <!-- exclude every standard java code -->
+                        <exclude>**</exclude>
+                    </excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

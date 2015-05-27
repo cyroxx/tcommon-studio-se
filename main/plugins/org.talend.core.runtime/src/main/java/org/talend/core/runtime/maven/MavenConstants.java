@@ -29,7 +29,7 @@ public interface MavenConstants {
      */
     static final String DEFAULT_LIB_GROUP_ID = DEFAULT_GROUP_ID + ".libraries";
 
-    static final String DEFAULT_LIB_VERSION = "1.0.0";
+    static final String DEFAULT_LIB_VERSION = "6.0.0";
 
     /*
      * for index

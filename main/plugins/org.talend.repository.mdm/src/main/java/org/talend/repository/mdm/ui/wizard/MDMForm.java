@@ -73,7 +73,7 @@ public class MDMForm extends AbstractForm {
 
     private static final String SERVER_RUL_S56 = "http://localhost:8180/talend/TalendPort";
 
-    private static final String SERVER_RUL_S60 = "http://localhost:8080/talendmdm/services/soap";
+    private static final String SERVER_RUL_S60 = "http://localhost:8180/talendmdm/services/soap";
 
     /**
      * DOC hwang MDMForm constructor comment.

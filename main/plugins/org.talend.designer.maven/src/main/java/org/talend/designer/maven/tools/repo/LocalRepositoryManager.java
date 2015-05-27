@@ -55,6 +55,10 @@ public abstract class LocalRepositoryManager {
 
     private final File repoFolder;
 
+    public LocalRepositoryManager() {
+        repoFolder = null;
+    }
+
     public LocalRepositoryManager(File baseDir) {
         super();
         Assert.isNotNull(baseDir);

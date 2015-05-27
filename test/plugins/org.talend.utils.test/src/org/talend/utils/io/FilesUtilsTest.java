@@ -10,16 +10,16 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package io;
+package org.talend.utils.io;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Test;
-import org.talend.utils.io.FilesUtils;
 
 /**
  * DOC Administrator class global comment. Detailled comment
@@ -175,5 +175,84 @@ public class FilesUtilsTest {
         assertTrue(file.exists());
         FilesUtils.deleteFile(file, true);
         assertFalse(file.exists());
+    }
+
+    @Test
+    public void testDeleteFolder() throws IOException {
+        File tmpFolder = new File("temp");
+        File testFolder = new File(tmpFolder, "test1111111111111");
+        FilesUtils.deleteFolder(testFolder, true);
+        assertFalse(testFolder.exists());
+
+        testFolder.mkdirs();
+        assertTrue(testFolder.exists());
+
+        FilesUtils.deleteFolder(testFolder, false);
+        assertTrue(testFolder.exists()); // still existed
+
+        FilesUtils.deleteFolder(testFolder, true);
+        assertFalse(testFolder.exists()); // has been deleted
+
+        File folder = new File(testFolder, "folder1");
+        File abcFile = new File(folder, "abc.txt");
+        File subFolderFile = new File(folder, "subfolder1");
+        File subFile = new File(subFolderFile, "sub.txt");
+        subFolderFile.mkdirs();
+        abcFile.createNewFile();
+        subFile.createNewFile();
+        assertTrue(folder.exists());
+        assertTrue(abcFile.exists());
+        assertTrue(subFolderFile.exists());
+        assertTrue(subFile.exists());
+
+        FilesUtils.deleteFolder(testFolder, false);
+        assertTrue(testFolder.exists()); // still existed
+        assertFalse(folder.exists()); // has been deleted
+        assertFalse(abcFile.exists()); // has been deleted
+        assertFalse(subFolderFile.exists()); // has been deleted
+        assertFalse(subFile.exists()); // has been deleted
+
+        // create again
+        subFolderFile.mkdirs();
+        abcFile.createNewFile();
+        subFile.createNewFile();
+        FilesUtils.deleteFolder(testFolder, true);
+        assertFalse(testFolder.exists()); // has been deleted
+        assertFalse(folder.exists()); // has been deleted
+        assertFalse(abcFile.exists()); // has been deleted
+        assertFalse(subFolderFile.exists()); // has been deleted
+        assertFalse(subFile.exists()); // has been deleted
+
+    }
+
+    @Test
+    public void testAllInSameFolder() throws IOException {
+        assertFalse(FilesUtils.allInSameFolder(null));
+        assertFalse(FilesUtils.allInSameFolder(new File("abc")));
+
+        File tmpFolder = new File("temp");
+        assertTrue(FilesUtils.allInSameFolder(tmpFolder));
+
+        File abcFile = new File(tmpFolder, "abc.txt");
+        assertFalse(FilesUtils.allInSameFolder(tmpFolder, "abc.txt"));
+        assertFalse(FilesUtils.allInSameFolder(abcFile, "abc.txt"));
+
+        if (!abcFile.exists()) {
+            abcFile.createNewFile();
+        }
+        assertTrue(FilesUtils.allInSameFolder(tmpFolder, "abc.txt"));
+        assertTrue(FilesUtils.allInSameFolder(abcFile, "abc.txt"));
+
+        File xyzFile = new File(tmpFolder, "xyz.txt");
+        if (!xyzFile.exists()) {
+            xyzFile.createNewFile();
+        }
+        assertTrue(FilesUtils.allInSameFolder(tmpFolder, "abc.txt", "xyz.txt"));
+        assertTrue(FilesUtils.allInSameFolder(abcFile, "abc.txt", "xyz.txt"));
+        assertTrue(FilesUtils.allInSameFolder(xyzFile, "abc.txt", "xyz.txt"));
+
+        assertFalse(FilesUtils.allInSameFolder(tmpFolder, "abc.txt", "xyz.txt", "XXXX123.txt"));
+        assertFalse(FilesUtils.allInSameFolder(abcFile, "abc.txt", "xyz.txt", "XXXX123.txt"));
+        assertFalse(FilesUtils.allInSameFolder(xyzFile, "abc.txt", "xyz.txt", "XXXX123.txt"));
     }
 }

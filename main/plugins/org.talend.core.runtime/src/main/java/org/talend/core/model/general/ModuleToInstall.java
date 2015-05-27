@@ -12,7 +12,6 @@
 // ============================================================================
 package org.talend.core.model.general;
 
-import org.talend.core.runtime.maven.MavenUrlHelper;
 
 /**
  * created by WCHEN on 2012-9-17 Detailled comment
@@ -36,14 +35,7 @@ public class ModuleToInstall {
 
     private String licenseUrl;
 
-    /* version defined in mvn: protocol */
-    private String version;
-
-    private String artifactId;
-
-    private String groupId;
-
-    private String packageName = "jar";//$NON-NLS-1$
+    private String mavenUri;
 
     public String getName() {
         return this.name;
@@ -102,42 +94,6 @@ public class ModuleToInstall {
     }
 
     /**
-     * Getter for version.
-     * 
-     * @return the version
-     */
-    public String getVersion() {
-        return this.version;
-    }
-
-    /**
-     * Sets the version.
-     * 
-     * @param version the version to set
-     */
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    /**
-     * Getter for artifactId.
-     * 
-     * @return the artifactId
-     */
-    public String getArtifactId() {
-        return this.artifactId;
-    }
-
-    /**
-     * Sets the artifactId.
-     * 
-     * @param artifactId the artifactId to set
-     */
-    public void setArtifactId(String artifactId) {
-        this.artifactId = artifactId;
-    }
-
-    /**
      * Getter for licenseUrl.
      * 
      * @return the licenseUrl
@@ -156,42 +112,20 @@ public class ModuleToInstall {
     }
 
     /**
-     * Getter for packageName.
+     * Getter for mavenUri.
      * 
-     * @return the packageName
+     * @return the mavenUri
      */
-    public String getPackageName() {
-        return this.packageName;
+    public String getMavenUri() {
+        return this.mavenUri;
     }
 
     /**
-     * Sets the packageName.
+     * Sets the mavenUri.
      * 
-     * @param packageName the packageName to set
+     * @param mavenUri the mavenUri to set
      */
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
-
-    /**
-     * Getter for groupId.
-     * 
-     * @return the groupId
-     */
-    public String getGroupId() {
-        return this.groupId;
-    }
-
-    /**
-     * Sets the groupId.
-     * 
-     * @param groupId the groupId to set
-     */
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
-    }
-
-    public String getMavenUrl() {
-        return MavenUrlHelper.generateMvnUrl(groupId, artifactId, version, null, null);
+    public void setMavenUri(String mavenUri) {
+        this.mavenUri = mavenUri;
     }
 }
