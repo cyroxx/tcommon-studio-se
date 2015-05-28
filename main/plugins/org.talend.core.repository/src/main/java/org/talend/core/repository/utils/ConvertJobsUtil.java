@@ -220,11 +220,11 @@ public class ConvertJobsUtil {
         }
     }
 
-    public static void createOperation(final String newJobName, final String jobTypeValue, final String frameworkValue,
+    public static Item createOperation(final String newJobName, final String jobTypeValue, final String frameworkValue,
             final IRepositoryViewObject sourceObject) {
         IProcessConvertService converter = null;
         if (sourceObject == null || sourceObject.getProperty() == null) {
-            return;
+            return null;
         }
         Item item = sourceObject.getProperty().getItem();
         if (JobType.STANDARD.getDisplayName().equals(jobTypeValue)) {
@@ -238,32 +238,22 @@ public class ConvertJobsUtil {
                         ProcessConverterType.CONVERTER_FOR_MAPREDUCE);
             }
             if (converter != null && converter instanceof IProcessConvertToAllTypeService) {
-                ((IProcessConvertToAllTypeService) converter).convertToProcess(item, sourceObject, newJobName, jobTypeValue);
+                return ((IProcessConvertToAllTypeService) converter).convertToProcess(item, sourceObject, newJobName,
+                        jobTypeValue);
             }
         } else if (JobType.BIGDATASTREAMING.getDisplayName().equals(jobTypeValue)) {
             converter = ProcessConvertManager.getInstance().extractConvertService(ProcessConverterType.CONVERTER_FOR_STORM);
             if (converter != null && converter instanceof IProcessConvertToAllTypeService) {
-                Item newItem = ((IProcessConvertToAllTypeService) converter).convertToProcessStreaming(item, sourceObject,
-                        newJobName, jobTypeValue, frameworkValue);
-                if (newItem != null) {
-                    Property newProperty = newItem.getProperty();
-                    if (newProperty.getAdditionalProperties() != null) {
-                        newProperty.getAdditionalProperties().put(FRAMEWORK, frameworkValue);
-                    }
-                }
+                return ((IProcessConvertToAllTypeService) converter).convertToProcessStreaming(item, sourceObject, newJobName,
+                        jobTypeValue, frameworkValue);
             }
         } else if (JobType.BIGDATABATCH.getDisplayName().equals(jobTypeValue)) {
             converter = ProcessConvertManager.getInstance().extractConvertService(ProcessConverterType.CONVERTER_FOR_MAPREDUCE);
             if (converter != null && converter instanceof IProcessConvertToAllTypeService) {
-                Item newItem = ((IProcessConvertToAllTypeService) converter).convertToProcessBatch(item, sourceObject,
-                        newJobName, jobTypeValue, frameworkValue);
-                if (newItem != null) {
-                    Property newProperty = newItem.getProperty();
-                    if (newProperty.getAdditionalProperties() != null) {
-                        newProperty.getAdditionalProperties().put(FRAMEWORK, frameworkValue);
-                    }
-                }
+                return ((IProcessConvertToAllTypeService) converter).convertToProcessBatch(item, sourceObject, newJobName,
+                        jobTypeValue, frameworkValue);
             }
         }
+        return null;
     }
 }

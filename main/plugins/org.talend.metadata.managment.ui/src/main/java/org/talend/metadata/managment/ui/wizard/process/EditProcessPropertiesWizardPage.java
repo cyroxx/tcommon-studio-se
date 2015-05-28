@@ -127,9 +127,9 @@ public class EditProcessPropertiesWizardPage extends PropertiesWizardPage {
         nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         nameText.setEditable(!readOnly);
 
-        // Java type
-        Label javaTypeLabel = new Label(container, SWT.NONE);
-        javaTypeLabel.setText(Messages.getString("PropertiesWizardPage.javaTypeLabel")); //$NON-NLS-1$
+        // Job type
+        Label jobTypeLabel = new Label(container, SWT.NONE);
+        jobTypeLabel.setText(Messages.getString("PropertiesWizardPage.jobTypeLabel")); //$NON-NLS-1$
 
         Composite typeGroup = new Composite(container, SWT.NONE);
         typeGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -147,7 +147,7 @@ public class EditProcessPropertiesWizardPage extends PropertiesWizardPage {
 
         // Framework
         Label label = new Label(typeGroup, SWT.NONE);
-        label.setText(Messages.getString("PropertiesWizardPage.framework")); //$NON-NLS-1$
+        label.setText("  " + Messages.getString("PropertiesWizardPage.framework") + "  "); //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
 
         framework = new CCombo(typeGroup, SWT.BORDER);
         framework.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
