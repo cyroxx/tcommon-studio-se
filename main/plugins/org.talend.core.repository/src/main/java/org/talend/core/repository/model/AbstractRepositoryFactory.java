@@ -13,6 +13,7 @@
 package org.talend.core.repository.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -26,6 +27,9 @@ import org.talend.core.context.RepositoryContext;
 import org.talend.core.model.general.Project;
 import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.model.properties.ContextItem;
+import org.talend.core.model.properties.User;
+import org.talend.core.model.properties.UserProjectAuthorization;
+import org.talend.core.model.properties.UserProjectAuthorizationType;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.model.repository.IRepositoryWorkUnitListener;
@@ -223,7 +227,22 @@ public abstract class AbstractRepositoryFactory implements IRepositoryFactory {
 
     @Override
     public boolean isUserReadOnlyOnCurrentProject() {
-        return false;
+        Project pro = ProjectManager.getInstance().getCurrentProject();
+        User user = getRepositoryContext().getUser();
+        if (pro == null || pro.getEmfProject() == null || pro.getEmfProject().eResource() == null || user == null) {
+            return false;
+        }
+        Collection<org.talend.core.model.properties.UserProjectAuthorization> userAutorizations = EcoreUtil.getObjectsByType(pro
+                .getEmfProject().eResource().getContents(),
+                org.talend.core.model.properties.PropertiesPackage.eINSTANCE.getUserProjectAuthorization());
+        boolean retValue = false;
+        for (Object element : userAutorizations) {
+            UserProjectAuthorization authorization = (UserProjectAuthorization) element;
+            if (authorization.getUser() != null && authorization.getUser().getLogin().equals(user.getLogin())) {
+                retValue = UserProjectAuthorizationType.READ_ONLY_LITERAL.equals(authorization.getType());
+            }
+        }
+        return retValue;
     }
 
     @Override

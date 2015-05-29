@@ -36,6 +36,8 @@ public class RepositoryContext {
 
     private boolean offline = false;
 
+    private boolean forceReadOnly = false;
+
     private boolean editableAsReadOnly = false;
 
     private Map<String, String> fields;
@@ -201,5 +203,13 @@ public class RepositoryContext {
 
     public void setEditableAsReadOnly(boolean editableAsReadOnly) {
         this.editableAsReadOnly = editableAsReadOnly;
+    }
+
+    public void setForceReadOnly(boolean forceReadOnly) {
+        this.forceReadOnly = forceReadOnly;
+    }
+
+    public boolean isForceReadOnly() {
+        return this.forceReadOnly;
     }
 }
