@@ -80,9 +80,8 @@ public enum EDatabaseConnTemplate {
     MSODBC(new DbConnStr(EDatabaseTypeName.MSODBC, //
             "jdbc:odbc:<datasource>")), //$NON-NLS-1$
 
-    ACCESS(new DbConnStrForAccess(EDatabaseTypeName.ACCESS, //
-            "jdbc:odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=<filename>", //$NON-NLS-1$
-            new EDatabaseVersion4Drivers[] { EDatabaseVersion4Drivers.ACCESS_2003, EDatabaseVersion4Drivers.ACCESS_2007 })),
+    ACCESS(new DbConnStr(EDatabaseTypeName.ACCESS, //
+            "jdbc:ucanaccess://<filename>")), //$NON-NLS-1$
 
     SYBASEASE(new DbConnStr(EDatabaseTypeName.SYBASEASE, //
             "jdbc:sybase:Tds:<host>:<port>/<sid>?<property>", //$NON-NLS-1$ 

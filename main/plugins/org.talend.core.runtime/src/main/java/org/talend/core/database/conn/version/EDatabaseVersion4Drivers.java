@@ -24,6 +24,8 @@ import org.talend.core.database.conn.DatabaseConnConstants;
  */
 public enum EDatabaseVersion4Drivers {
     // access
+    ACCESS_JDBC(new DbVersion4Drivers(EDatabaseTypeName.ACCESS, new String[] {
+            "jackcess-2.0.8.jar", "ucanaccess-2.0.9.4.jar", "commons-lang-2.6.jar", "commons-logging-1.1.1.jar", "hsqldb.jar" })), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     ACCESS_2003(new DbVersion4Drivers(EDatabaseTypeName.ACCESS, "Access 2003", "Access_2003")), //$NON-NLS-1$ //$NON-NLS-2$
     ACCESS_2007(new DbVersion4Drivers(EDatabaseTypeName.ACCESS, "Access 2007", "Access_2007")), //$NON-NLS-1$ //$NON-NLS-2$
     // oracle

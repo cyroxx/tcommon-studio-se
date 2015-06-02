@@ -19,7 +19,7 @@ import java.util.List;
  * cli class global comment. Detailled comment
  */
 public enum EDatabase4DriverClassName {
-    ACCESS(EDatabaseTypeName.ACCESS, "sun.jdbc.odbc.JdbcOdbcDriver"), //$NON-NLS-1$
+    ACCESS(EDatabaseTypeName.ACCESS, "net.ucanaccess.jdbc.UcanaccessDriver"), //$NON-NLS-1$
     AS400(EDatabaseTypeName.AS400, "com.ibm.as400.access.AS400JDBCDriver"), //$NON-NLS-1$
     FIREBIRD(EDatabaseTypeName.FIREBIRD, "org.firebirdsql.jdbc.FBDriver"), //$NON-NLS-1$
     GODBC(EDatabaseTypeName.GODBC, "sun.jdbc.odbc.JdbcOdbcDriver"), //$NON-NLS-1$

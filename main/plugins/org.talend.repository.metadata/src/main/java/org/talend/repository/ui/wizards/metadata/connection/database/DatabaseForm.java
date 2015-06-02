@@ -3695,8 +3695,8 @@ public class DatabaseForm extends AbstractForm {
             dbVersionCombo.getCombo().setItems(versions);
             dbVersionCombo.setHideWidgets(!isAS400);
         } else if (dbType.equals(EDatabaseConnTemplate.ACCESS.getDBDisplayName())) {
-            dbVersionCombo.getCombo().setItems(versions);
-            dbVersionCombo.setHideWidgets(false);
+            // dbVersionCombo.getCombo().setItems(versions);
+            dbVersionCombo.setHideWidgets(true);
         } else if (dbType.equals(EDatabaseConnTemplate.MYSQL.getDBDisplayName())) {
             dbVersionCombo.getCombo().setItems(versions);
             dbVersionCombo.setHideWidgets(!isMySQL);
