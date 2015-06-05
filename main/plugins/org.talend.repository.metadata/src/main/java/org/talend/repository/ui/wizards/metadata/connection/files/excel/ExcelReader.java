@@ -245,7 +245,6 @@ public class ExcelReader {
                     break;
                 }
                 Row row = sheet.getRow(i);
-                sheet.getTopRow();
                 if (row != null) {
                     List<String> contents = new ArrayList<String>();
                     for (int j = row.getFirstCellNum(); j < row.getLastCellNum(); j++) {
