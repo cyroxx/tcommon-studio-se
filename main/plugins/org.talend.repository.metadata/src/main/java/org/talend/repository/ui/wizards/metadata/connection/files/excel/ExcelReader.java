@@ -245,14 +245,29 @@ public class ExcelReader {
                     break;
                 }
                 Row row = sheet.getRow(i);
+                sheet.getTopRow();
                 if (row != null) {
                     List<String> contents = new ArrayList<String>();
                     for (int j = row.getFirstCellNum(); j < row.getLastCellNum(); j++) {
                         String cell = null;
-                        if (row.getCell(j) != null && !row.getCell(j).equals("")) { //$NON-NLS-1$
-                            cell = row.getCell(j).toString();
+                        if (row.getLastCellNum() != row.getPhysicalNumberOfCells()) {
+                            if ((j - 1) == 0 && row.getCell(0) == null) {
+                                cell = ""; //$NON-NLS-1$
+                                contents.add(cell);
+                            }
+                            if (row.getCell(j) != null && !row.getCell(j).equals("")) { //$NON-NLS-1$
+                                row.getPhysicalNumberOfCells();
+                                cell = row.getCell(j).toString();
+                            } else {
+                                cell = ""; //$NON-NLS-1$
+                            }
                         } else {
-                            cell = ""; //$NON-NLS-1$
+                            if (row.getCell(j) != null && !row.getCell(j).equals("")) { //$NON-NLS-1$
+                                row.getPhysicalNumberOfCells();
+                                cell = row.getCell(j).toString();
+                            } else {
+                                cell = ""; //$NON-NLS-1$
+                            }
                         }
                         contents.add(cell);
                     }
