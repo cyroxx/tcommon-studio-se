@@ -98,9 +98,7 @@ public abstract class ContextComposite extends Composite implements IContextMode
                 }
             }
         }
-        if (flag) {
-            tableNebulas.setEnabled(false);
-        } else {
+        if (enable) {
             tableNebulas.setEnabled(enable);
         }
     }
@@ -112,7 +110,7 @@ public abstract class ContextComposite extends Composite implements IContextMode
 
     private void refreshView() {
         if (getContextManager() == null) {
-            this.setEnabled(false);
+            // this.setEnabled(false);
             tableNebulas.setEnabled(isReadOnly());
         } else {
             this.setEnabled(true);

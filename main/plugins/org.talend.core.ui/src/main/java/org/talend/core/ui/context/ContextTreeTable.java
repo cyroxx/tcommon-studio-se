@@ -271,7 +271,7 @@ public class ContextTreeTable {
             natTable = new NatTable(parent, NatTable.DEFAULT_STYLE_OPTIONS | SWT.BORDER, gridLayer, false);
             natTable.setConfigRegistry(configRegistry);
 
-            addCustomStylingBehaviour(parent.getFont(), bodyDataProvider, columnGroupModel, manager.getContextManager());
+            addCustomStylingBehaviour(parent.getFont(), bodyDataProvider, columnGroupModel, manager.getContextManager(), manager);
 
             addCustomContextMenuBehavior(manager, bodyDataProvider, selectionProvider);
 
@@ -295,23 +295,21 @@ public class ContextTreeTable {
             natTable.setLayerPainter(layerPainter);
 
             attachCheckColumnTip(natTable);
-            
+
             // global settings only effect on body and default region, so should set other regions' color separately.
             natTable.setBackground(GUIHelper.COLOR_WHITE);
             natTable.addConfiguration(new AbstractRegistryConfiguration() {
+
                 @Override
                 public void configureRegistry(IConfigRegistry configRegistry) {
                     Style cellStyle = new Style();
                     cellStyle.setAttributeValue(CellStyleAttributes.BACKGROUND_COLOR, GUIHelper.COLOR_WHITE);
-                    configRegistry.registerConfigAttribute(
-                            CellConfigAttributes.CELL_STYLE, cellStyle,
-                            DisplayMode.NORMAL, GridRegion.COLUMN_HEADER);
-                    configRegistry.registerConfigAttribute(
-                    		CellConfigAttributes.CELL_STYLE, cellStyle,
-                    		DisplayMode.NORMAL, GridRegion.CORNER);
-                    configRegistry.registerConfigAttribute(
-                    		CellConfigAttributes.CELL_STYLE, cellStyle,
-                    		DisplayMode.NORMAL, GridRegion.ROW_HEADER);
+                    configRegistry.registerConfigAttribute(CellConfigAttributes.CELL_STYLE, cellStyle, DisplayMode.NORMAL,
+                            GridRegion.COLUMN_HEADER);
+                    configRegistry.registerConfigAttribute(CellConfigAttributes.CELL_STYLE, cellStyle, DisplayMode.NORMAL,
+                            GridRegion.CORNER);
+                    configRegistry.registerConfigAttribute(CellConfigAttributes.CELL_STYLE, cellStyle, DisplayMode.NORMAL,
+                            GridRegion.ROW_HEADER);
                 }
             });
 
@@ -529,13 +527,13 @@ public class ContextTreeTable {
     }
 
     private void addCustomStylingBehaviour(Font contextFont, final GlazedListsDataProvider<ContextTreeNode> bodyDataProvider,
-            ColumnGroupModel groupModel, IContextManager contextManager) {
+            ColumnGroupModel groupModel, IContextManager contextManager, IContextModelManager modelManager) {
         ContextNatTableStyleConfiguration natTableConfiguration = new ContextNatTableStyleConfiguration(contextFont);
         natTableConfiguration.cellPainter = new ContextNatTableBackGroudPainter(new ContextAutoResizeTextPainter(false, false,
                 true), bodyDataProvider);
 
         natTable.addConfiguration(natTableConfiguration);
-        natTable.addConfiguration(new ContextNatTableConfiguration(bodyDataProvider, groupModel, contextManager));
+        natTable.addConfiguration(new ContextNatTableConfiguration(bodyDataProvider, groupModel, contextManager, modelManager));
     }
 
     private void addCustomContextMenuBehavior(final IContextModelManager modelManager,

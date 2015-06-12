@@ -46,6 +46,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.talend.core.model.metadata.types.ContextParameterJavaTypeManager;
 import org.talend.core.model.process.IContextManager;
 import org.talend.core.ui.context.ContextTreeTable.ContextTreeNode;
+import org.talend.core.ui.context.IContextModelManager;
 import org.talend.core.ui.context.model.ContextTabChildModel;
 import org.talend.core.ui.context.model.table.ContextTableConstants;
 
@@ -60,16 +61,20 @@ public class ContextNatTableConfiguration extends AbstractRegistryConfiguration 
 
     private IContextManager manager;
 
+    private IContextModelManager modelManager;
+
     /**
      * DOC ldong ContextNatTableConfiguration constructor comment.
      * 
      * @param dataProvider
      */
-    public ContextNatTableConfiguration(IDataProvider dataProvider, ColumnGroupModel columnGroupModel, IContextManager manager) {
+    public ContextNatTableConfiguration(IDataProvider dataProvider, ColumnGroupModel columnGroupModel, IContextManager manager,
+            IContextModelManager modelManager) {
         super();
         this.dataProvider = dataProvider;
         this.columnGroupModel = columnGroupModel;
         this.manager = manager;
+        this.modelManager = modelManager;
     }
 
     /*
@@ -157,6 +162,9 @@ public class ContextNatTableConfiguration extends AbstractRegistryConfiguration 
 
             @Override
             public boolean isEditable(int columnIndex, int rowIndex) {
+                if (modelManager != null && modelManager.isReadOnly()) {
+                    return false;
+                }
                 ContextTreeNode rowNode = ((GlazedListsDataProvider<ContextTreeNode>) dataProvider).getRowObject(rowIndex);
                 if (ContextNatTableUtils.isEmptyTreeNode(rowNode.getTreeData())) {
                     return false;
