@@ -663,6 +663,12 @@ public class ProcessorUtilities {
 
     private static IProcessor generateCode(JobInfo jobInfo, String selectedContextName, boolean statistics, boolean trace,
             boolean needContext, int option, IProgressMonitor progressMonitor) throws ProcessorException {
+        return generateCode(jobInfo, selectedContextName, statistics, trace, needContext, true, option, progressMonitor);
+    }
+
+    private static IProcessor generateCode(JobInfo jobInfo, String selectedContextName, boolean statistics, boolean trace,
+            boolean needContext, boolean isNeedLoadmodules, int option, IProgressMonitor progressMonitor)
+            throws ProcessorException {
         needContextInCurrentGeneration = needContext;
         TimeMeasure.display = CommonsPlugin.isDebugMode();
         TimeMeasure.displaySteps = CommonsPlugin.isDebugMode();
@@ -739,6 +745,9 @@ public class ProcessorUtilities {
                 TimeMeasure.begin(idTimer);
             } else {
                 TimeMeasure.step(idTimer, "Loading job");
+            }
+            if (currentProcess instanceof IProcess2) {
+                ((IProcess2) currentProcess).setNeedLoadmodules(isNeedLoadmodules);
             }
             generateJobInfo(jobInfo, isMainJob, currentProcess, selectedProcessItem);
             TimeMeasure.step(idTimer, "generateJobInfo");
@@ -897,7 +906,11 @@ public class ProcessorUtilities {
                             continue;
                         }
                     }
-
+                    IElementParameter indepPara = node.getElementParameter("USE_INDEPENDENT_PROCESS");
+                    boolean isNeedLoadmodules = true;
+                    if (indepPara != null) {
+                        isNeedLoadmodules = !(boolean) indepPara.getValue();
+                    }
                     IElementParameter processIdparam = node.getElementParameter("PROCESS_TYPE_PROCESS"); //$NON-NLS-1$
                     // feature 19312
                     String jobIds = (String) processIdparam.getValue();
@@ -939,10 +952,10 @@ public class ProcessorUtilities {
                                 // children won't have stats / traces
                                 if (BitwiseOptionUtils.containOption(option, GENERATE_WITH_FIRST_CHILD)) {
                                     generateCode(subJobInfo, selectedContextName, statistics, false, properties,
-                                            GENERATE_MAIN_ONLY, progressMonitor);
+                                            isNeedLoadmodules, GENERATE_MAIN_ONLY, progressMonitor);
                                 } else {
                                     generateCode(subJobInfo, selectedContextName, statistics, false, properties,
-                                            GENERATE_ALL_CHILDS, progressMonitor);
+                                            isNeedLoadmodules, GENERATE_ALL_CHILDS, progressMonitor);
                                     currentProcess.setNeedRegenerateCode(true);
                                 }
                             }

@@ -132,6 +132,11 @@ public interface IProcess2 extends IRepositoryObject, IProcess {
     boolean needsSpring();
 
     String getSpringContent();
+
     // END TESB-7887
+
+    public boolean isNeedLoadmodules();
+
+    public void setNeedLoadmodules(boolean isNeedLoadmodules);
 
 }
