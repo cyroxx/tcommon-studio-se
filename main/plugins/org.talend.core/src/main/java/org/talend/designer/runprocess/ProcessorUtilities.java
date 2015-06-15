@@ -774,7 +774,7 @@ public class ProcessorUtilities {
 
             Set<ModuleNeeded> neededLibraries = CorePlugin.getDefault().getDesignerCoreService()
                     .getNeededLibrariesForProcess(currentProcess, false);
-            if (neededLibraries != null) {
+            if (isNeedLoadmodules && neededLibraries != null) {
                 LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
                         neededLibraries);
                 LastGenerationInfo.getInstance().setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
