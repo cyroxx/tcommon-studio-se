@@ -71,6 +71,11 @@ public abstract class AbstractNodeTester extends PropertyTester {
         return contentType != null && contentType.equals(type);
     }
 
+    public boolean isTypeNode(RepositoryNode repositoryNode) {
+        ERepositoryObjectType contentType = getNodeContentType(repositoryNode);
+        return contentType != null && (ERepositoryObjectType.getAllTypesOfProcess().contains(contentType));
+    }
+
     public ERepositoryObjectType getNodeContentType(RepositoryNode repositoryNode) {
         return repositoryNode != null ? (ERepositoryObjectType) repositoryNode.getProperties(EProperties.CONTENT_TYPE) : null;
     }
