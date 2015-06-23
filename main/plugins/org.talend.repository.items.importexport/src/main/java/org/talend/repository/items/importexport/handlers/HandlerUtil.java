@@ -34,7 +34,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.runtime.utils.io.FileCopyUtils;
 import org.talend.core.model.properties.Item;
-import org.talend.core.model.properties.PropertiesPackage;
 import org.talend.core.model.properties.helper.ByteArrayResource;
 import org.talend.core.repository.constants.FileConstants;
 import org.talend.repository.items.importexport.handlers.model.ImportItem;
@@ -82,10 +81,10 @@ public final class HandlerUtil {
 
     // added by dlin 2011-7-25 don't like .item and .property ,just copy .screenshot file will be ok
     public static void copyScreenshotFile(ResourcesManager manager, ImportItem itemRecord) throws IOException {
-        int id = itemRecord.getItem().eClass().getClassifierID();
-        if (id != PropertiesPackage.PROCESS_ITEM && id != PropertiesPackage.JOBLET_PROCESS_ITEM) {
-            return;
-        }
+        // int id = itemRecord.getItem().eClass().getClassifierID();
+        // if (id != PropertiesPackage.PROCESS_ITEM && id != PropertiesPackage.JOBLET_PROCESS_ITEM) {
+        // return;
+        // }
         OutputStream os = null;
         InputStream is = null;
         try {
