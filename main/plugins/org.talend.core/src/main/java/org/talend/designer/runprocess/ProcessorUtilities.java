@@ -15,6 +15,7 @@ package org.talend.designer.runprocess;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -774,9 +775,11 @@ public class ProcessorUtilities {
 
             Set<ModuleNeeded> neededLibraries = CorePlugin.getDefault().getDesignerCoreService()
                     .getNeededLibrariesForProcess(currentProcess, false);
-            if (isNeedLoadmodules && neededLibraries != null) {
-                LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                        neededLibraries);
+            if (neededLibraries != null) {
+                if (isNeedLoadmodules) {
+                    LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(),
+                            jobInfo.getJobVersion(), neededLibraries);
+                }
                 LastGenerationInfo.getInstance().setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
                         neededLibraries);
 
@@ -923,6 +926,7 @@ public class ProcessorUtilities {
                             String version = (String) node.getElementParameter("PROCESS_TYPE_VERSION").getValue(); //$NON-NLS-1$
                             JobInfo subJobInfo = null;
                             subJobInfo = new JobInfo(jobId, context, version);
+
                             // get processitem from job
                             processItem = ItemCacheManager.getProcessItem(jobId, version);
 
@@ -932,6 +936,11 @@ public class ProcessorUtilities {
                             }
 
                             subJobInfo.setJobVersion(processItem.getProperty().getVersion());
+
+                            if (!isNeedLoadmodules) {
+                                LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(subJobInfo.getJobId(),
+                                        subJobInfo.getJobVersion(), Collections.<ModuleNeeded> emptySet());
+                            }
 
                             if (jobInfo.isApplyContextToChildren()) {
                                 subJobInfo.setApplyContextToChildren(jobInfo.isApplyContextToChildren());
