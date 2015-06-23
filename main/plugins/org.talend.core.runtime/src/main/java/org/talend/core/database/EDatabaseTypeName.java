@@ -213,7 +213,7 @@ public enum EDatabaseTypeName {
 
     public static EDatabaseTypeName getTypeFromDbType(String dbType, boolean isDefault) {
         if (dbType == null) {
-            return getTypeFormDisplayNameOriginal(dbType, isDefault);
+            return getTypeFromDisplayNameOriginal(dbType, isDefault);
         }
         for (EDatabaseTypeName typename : EDatabaseTypeName.values()) {
             if (typename.getXmlName().toUpperCase().equals(dbType.toUpperCase())) {
@@ -223,7 +223,7 @@ public enum EDatabaseTypeName {
                 return typename;
             }
         }
-        return getTypeFormDisplayNameOriginal(dbType, isDefault);
+        return getTypeFromDisplayNameOriginal(dbType, isDefault);
     }
 
     public static EDatabaseTypeName getTypeFromDisplayName(String displayName) {
@@ -243,10 +243,10 @@ public enum EDatabaseTypeName {
     }
 
     public static EDatabaseTypeName getTypeFromDisplayName(String displayName, boolean isDefault) {
-        return getTypeFormDisplayNameOriginal(displayName, isDefault);
+        return getTypeFromDisplayNameOriginal(displayName, isDefault);
     }
-    
-    private static EDatabaseTypeName getTypeFormDisplayNameOriginal(String displayName, boolean isDefault) {
+
+    private static EDatabaseTypeName getTypeFromDisplayNameOriginal(String displayName, boolean isDefault) {
         if (displayName == null && isDefault) {
             return MYSQL;
         } else if (displayName == null) {
