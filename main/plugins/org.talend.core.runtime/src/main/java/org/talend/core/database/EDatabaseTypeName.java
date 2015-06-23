@@ -198,7 +198,7 @@ public enum EDatabaseTypeName {
 
     public static EDatabaseTypeName getTypeFromDbType(String dbType) {
         if (dbType == null) {
-            return getTypeFromDisplayName(dbType);
+            return getTypeFromDispalyNameOriginal(dbType);
         }
         for (EDatabaseTypeName typename : EDatabaseTypeName.values()) {
             if (typename.getXmlName().toUpperCase().equals(dbType.toUpperCase())) {
@@ -208,12 +208,12 @@ public enum EDatabaseTypeName {
                 return typename;
             }
         }
-        return getTypeFromDisplayName(dbType);
+        return getTypeFromDispalyNameOriginal(dbType);
     }
 
     public static EDatabaseTypeName getTypeFromDbType(String dbType, boolean isDefault) {
         if (dbType == null) {
-            return getTypeFromDisplayName(dbType, isDefault);
+            return getTypeFormDisplayNameOriginal(dbType, isDefault);
         }
         for (EDatabaseTypeName typename : EDatabaseTypeName.values()) {
             if (typename.getXmlName().toUpperCase().equals(dbType.toUpperCase())) {
@@ -223,10 +223,14 @@ public enum EDatabaseTypeName {
                 return typename;
             }
         }
-        return getTypeFromDisplayName(dbType, isDefault);
+        return getTypeFormDisplayNameOriginal(dbType, isDefault);
     }
 
     public static EDatabaseTypeName getTypeFromDisplayName(String displayName) {
+        return getTypeFromDbType(displayName);
+    }
+
+    private static EDatabaseTypeName getTypeFromDispalyNameOriginal(String displayName) {
         if (displayName == null) {
             return MYSQL;
         }
@@ -239,6 +243,10 @@ public enum EDatabaseTypeName {
     }
 
     public static EDatabaseTypeName getTypeFromDisplayName(String displayName, boolean isDefault) {
+        return getTypeFormDisplayNameOriginal(displayName, isDefault);
+    }
+    
+    private static EDatabaseTypeName getTypeFormDisplayNameOriginal(String displayName, boolean isDefault) {
         if (displayName == null && isDefault) {
             return MYSQL;
         } else if (displayName == null) {
