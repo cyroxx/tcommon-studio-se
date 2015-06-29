@@ -13,6 +13,7 @@
 package org.talend.core.repository.ui.view;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -546,6 +547,7 @@ public class RepositoryDropAdapter extends PluginDropAdapter {
             monitor.beginTask(getTaskName(), IProgressMonitor.UNKNOWN);
             // MOD gdbu 2011-10-9 TDQ-3545
             List<?> selectItems = ((org.eclipse.jface.viewers.TreeSelection) data).toList();
+            final List<RepositoryNode> operationableItems = new ArrayList<RepositoryNode>();
             for (Object object : selectItems) {
                 if (object instanceof RepositoryNode) {
                     RepositoryNode repositoryNode = (RepositoryNode) object;
@@ -570,7 +572,8 @@ public class RepositoryDropAdapter extends PluginDropAdapter {
                                 Messages.getString("RepositoryDropAdapter_moveTitle"), //$NON-NLS-1$
                                 errorMsg);
                         setReturnValue(false);
-                        return;
+                        continue;
+                        // return;
                     }
                     ERepositoryObjectType sourceType = (ERepositoryObjectType) repositoryNode
                             .getProperties(EProperties.CONTENT_TYPE);
@@ -584,13 +587,19 @@ public class RepositoryDropAdapter extends PluginDropAdapter {
                                 resourceChangeService);
                         if (!judgeCanMoveOrNotByDependency) {
                             setReturnValue(false);
-                            return;
+                            continue;
+                            // return;
                         }
                     }
+
+                    operationableItems.add(repositoryNode);
                 }
             }
             // ~TDQ-3545
 
+            if (operationableItems.isEmpty()) {
+                return;
+            }
             String moveName = "User action : Move Object"; //$NON-NLS-1$
             RepositoryWorkUnit<Object> repositoryWorkUnit = new RepositoryWorkUnit<Object>(moveName,
                     MoveObjectAction.getInstance()) {
@@ -607,11 +616,15 @@ public class RepositoryDropAdapter extends PluginDropAdapter {
                                 //                                    monitor.subTask(Messages.getString("RepositoryDropAdapter.moving") + sourceNode.getObject().getLabel()); //$NON-NLS-1$
                                 // MoveObjectAction.getInstance().execute(sourceNode, targetNode, true);
                                 // }
-                                RepositoryNode[] nodeArray = new RepositoryNode[((StructuredSelection) data).toArray().length];
-                                for (int i = 0; i < ((StructuredSelection) data).toArray().length; i++) {
-                                    final RepositoryNode sourceNode = (RepositoryNode) ((StructuredSelection) data).toArray()[i];
-                                    nodeArray[i] = sourceNode;
-                                }
+                                // RepositoryNode[] nodeArray = new RepositoryNode[((StructuredSelection)
+                                // data).toArray().length];
+                                // for (int i = 0; i < ((StructuredSelection) data).toArray().length; i++) {
+                                // final RepositoryNode sourceNode = (RepositoryNode) ((StructuredSelection)
+                                // data).toArray()[i];
+                                // nodeArray[i] = sourceNode;
+                                // }
+                                RepositoryNode[] nodeArray = operationableItems.toArray(new RepositoryNode[operationableItems
+                                        .size()]);
                                 MoveObjectAction.getInstance().executeMulti(nodeArray, targetNode, null, true);
                             } catch (Exception e) {
                                 throw new CoreException(new org.eclipse.core.runtime.Status(IStatus.ERROR, FrameworkUtil
